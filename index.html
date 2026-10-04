@@ -207,6 +207,8 @@
     .leaderboard, .notice { border-radius: 5px; }
     .benchmark-note { padding: 14px 15px; margin-top: 12px; border-left: 2px solid var(--amber); background: #24251e; color: #d9d1bd; font-size: 11px; line-height: 1.7; }
     .benchmark-note strong { color: var(--amber); }
+    .measurement-mode { min-height: 20px; margin: -5px 0 12px; color: var(--muted); font-size: 10px; }
+    .performance-button { margin-top: 9px; padding: 0; border: 0; border-bottom: 1px solid #ffc17880; background: transparent; color: var(--amber); font-size: 11px; }
     .report-button { display: inline-flex; align-items: center; gap: 7px; padding: 7px 0; border: 0; background: transparent; color: var(--cyan); font-size: 11px; }
     .report-button:disabled { opacity: .45; cursor: not-allowed; }
     .score-dialog { width: min(510px, calc(100% - 30px)); color: var(--text); background: #1b2420; border: 1px solid var(--line); border-radius: 7px; padding: 24px; }
@@ -297,8 +299,9 @@
       </section>
       <section class="columns">
         <div class="panel tests">
-          <div class="panel-heading"><h2>实时图形基准</h2><div class="test-selector"><select class="gpu-profile" id="gpuProfile" aria-label="GPU 测试强度"><option value="gentle">轻盈 · 540p</option><option value="balanced" selected>标准 · 720p</option><option value="intense">极限 · 1080p</option></select><select class="duration" id="duration" aria-label="测试时长"><option value="10">10 秒</option><option value="20" selected>20 秒</option><option value="30">30 秒</option></select></div></div>
-          <div class="gpu-stage" id="gpuStage"><canvas id="gpuCanvas" aria-label="实时 Mandelbulb 图形压力测试画面"></canvas><div class="scene-placeholder"><div><div class="scene-orbit"></div><strong>光线步进 · Mandelbulb</strong><span>启动 GPU 测试，看看帧率如何随场景变化</span></div></div><div class="stage-topline"><span class="stage-label" id="sceneStatus">待机 · 标准强度</span><div class="stage-fps"><strong id="liveFps">--</strong><span>LIVE FPS</span></div></div><div class="stage-bottomline"><div class="stage-metrics"><div>平均帧时间<strong id="frameTime">-- ms</strong></div><div>1% low<strong id="lowFps">-- FPS</strong></div><div>渲染尺寸<strong id="renderSize">--</strong></div></div><span class="stage-label" id="gpuTimer">等待开跑</span></div></div>
+          <div class="panel-heading"><h2>实时图形基准</h2><div class="test-selector"><select class="gpu-profile" id="gpuProfile" aria-label="GPU 测试强度"><option value="gentle">轻盈 · 540p</option><option value="balanced" selected>标准 · 720p</option><option value="intense">极限 · 1080p</option><option value="fiveK">原生 · 5K</option></select><select class="duration" id="duration" aria-label="测试时长"><option value="10">10 秒</option><option value="20" selected>20 秒</option><option value="30">30 秒</option></select></div></div>
+          <div class="gpu-stage" id="gpuStage"><canvas id="gpuCanvas" aria-label="实时 Mandelbulb 图形压力测试画面"></canvas><div class="scene-placeholder"><div><div class="scene-orbit"></div><strong>光线步进 · Mandelbulb</strong><span>逐帧绘制，不是循环播放的视频</span></div></div><div class="stage-topline"><span class="stage-label" id="sceneStatus">待机 · 标准强度</span><div class="stage-fps"><strong id="liveFps">--</strong><span>DISPLAY FPS</span></div></div><div class="stage-bottomline"><div class="stage-metrics"><div>呈现帧时间<strong id="frameTime">-- ms</strong></div><div>1% low<strong id="lowFps">-- FPS</strong></div><div>GPU 执行<strong id="gpuFrameTime">-- ms</strong></div><div>渲染尺寸<strong id="renderSize">--</strong></div></div><span class="stage-label" id="gpuTimer">等待开跑</span></div></div>
+          <div class="measurement-mode" id="measurementMode">GPU 计时能力检测中</div>
           <div class="fps-chart-wrap"><svg class="fps-chart" viewBox="0 0 360 58" preserveAspectRatio="none" aria-label="实时 FPS 帧率曲线"><defs><linearGradient id="fpsFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#c2ed72" stop-opacity=".28"/><stop offset="1" stop-color="#c2ed72" stop-opacity="0"/></linearGradient></defs><path class="chart-grid" d="M0 14H360 M0 29H360 M0 44H360"/><path id="fpsArea" class="chart-area" d=""/><polyline id="fpsTrace" class="chart-line" points=""/></svg><div class="fps-peak">本轮峰值<strong id="peakFps">-- FPS</strong></div></div>
           <div class="test-row"><div class="test-icon">CPU</div><div class="test-info"><strong>处理器多线程</strong><p>本机并行计算 · 最多启用 16 个线程</p></div><span class="test-result" id="cpuResult">待测</span><button class="run-button" data-test="cpu" type="button">运行</button></div>
           <div class="test-row"><div class="test-icon">GPU</div><div class="test-info"><strong>动态图形渲染</strong><p>真实场景 FPS · 帧时间与 1% low</p></div><span class="test-result" id="gpuResult">待测</span><button class="run-button" data-test="gpu" type="button">运行</button></div>
@@ -307,25 +310,28 @@
           <div class="progress-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div><div class="run-state" id="runState" aria-live="polite">单项最长 30 秒；CPU 温度传感器可用时，超过 90°C 自动停止。</div>
         </div>
         <aside class="side-stack">
-          <div class="benchmark-note"><strong>分数不是玄学。</strong>按 CPU 40%、GPU 40%、内存 20% 加权；各项满分都对应固定参照值。GPU 测试依赖屏幕刷新率，优先在“标准 · 720p”下比较。<button class="score-help" id="scoreHelpSide" type="button">查看完整评分说明</button></div>
+          <div class="benchmark-note"><strong>分数不是玄学。</strong>CPU 40%、GPU 40%、内存 20%。GPU 有计时扩展时按实际 GPU 执行耗时计分；没有扩展只显示受刷新率限制的 FPS，不计 GPU 分。5K 为原生 5120×2880。<button class="score-help" id="scoreHelpSide" type="button">查看评分公式</button></div>
+          <div class="notice performance-notice"><strong>想让它更快？先找瓶颈</strong><p>不会改频率、电压或温控。按你的系统、温度和测试结果给出可逆的性能建议；任何机器都无法保证超频 3 倍。</p><button class="performance-button" id="performanceGuide" type="button">查看安全性能建议</button></div>
           <div class="notice"><strong>对这台机器的尊重</strong><p>CPU 压测最多 30 秒，传感器可用时达到 90°C 自动停止。显卡、风扇和电源读数受驱动与系统限制；磁盘只读取型号和健康信息，不写入压力数据。温度或风扇异常时请立即停止。</p></div>
           <div class="panel leaderboard"><div class="panel-heading"><h2>本机成绩簿</h2><span class="local-note">仅保存在这台电脑</span></div><div class="leader-head"><span>名次</span><span>完成日期</span><span style="text-align:right">RIG</span></div><div id="leaderRows"></div></div>
         </aside>
       </section>
     </main>
   </div>
-  <dialog class="score-dialog" id="scoreDialog"><h2>这份分数代表什么？</h2><p>RIG 是本应用内的 0–100 性能画像，不是行业标准，也不冒充硬件认证。完整跑完三项后，按以下权重加权；未测项目不计入，并标出完成率。</p><div class="score-breakdown"><div class="score-breakdown-row"><span>CPU · 80,000,000 次基准运算 / 秒 = 100 分</span><strong>40%</strong></div><div class="score-breakdown-row"><span>GPU · 1280×720、12 次 Mandelbulb 迭代、60 FPS = 100 分</span><strong>40%</strong></div><div class="score-breakdown-row"><span>内存 · 25,000 MB/s 实际读写 = 100 分</span><strong>20%</strong></div></div><ul><li>单项分数到 100 封顶，低于基准按比例显示。</li><li>GPU FPS 会受显示器刷新率、测试档位和窗口尺寸影响；请用相同档位比较。</li><li>不同系统、应用版本和散热环境会影响结果；更适合对比同一台设备的前后变化。</li></ul><button class="dialog-close" id="closeScoreDialog" type="button">明白了</button></dialog>
+  <dialog class="score-dialog" id="scoreDialog"><h2>这份分数代表什么？</h2><p>RIG 是本应用内的 0–100 性能画像，不是行业标准，也不冒充硬件认证。完整跑完三项后，按以下权重加权；未测项目不计入，并标出完成率。</p><div class="score-breakdown"><div class="score-breakdown-row"><span>CPU · 80,000,000 次基准运算 / 秒 = 100 分</span><strong>40%</strong></div><div class="score-breakdown-row"><span>GPU · 1280×720、12 次迭代、GPU 执行 16.67 ms = 100 分</span><strong>40%</strong></div><div class="score-breakdown-row"><span>内存 · 25,000 MB/s 实际读写 = 100 分</span><strong>20%</strong></div></div><ul><li>单项分数到 100 封顶，低于基准按比例显示。</li><li>GPU timer query 不可用时保留呈现 FPS，但不把显示器刷新率冒充 GPU 速度，也不计 GPU 子分。</li><li>5K 测试会渲染 14,745,600 像素，单帧缓冲约 56 MiB；必须受设备尺寸上限约束。</li><li>不同系统、应用版本和散热环境会影响结果；适合用同一档位对比同一台设备。</li></ul><button class="dialog-close" id="closeScoreDialog" type="button">明白了</button></dialog>
+  <dialog class="score-dialog" id="performanceDialog"><h2>给这台机器的安全建议</h2><p id="performanceSummary">这些建议只调用操作系统和硬件厂商公开设置，不写时钟、电压、风扇曲线或固件。</p><ul id="performanceTips"></ul><button class="dialog-close" id="closePerformanceDialog" type="button">知道了</button></dialog>
   <div class="toast" id="toast" role="status"></div>
   <script>
     const $ = (selector) => document.querySelector(selector);
     let cpuThreads = Math.max(1, navigator.hardwareConcurrency || 2);
-    const runtime = { workers: [], animation: 0, timer: 0, stop: null, running: false, all: false };
+    const runtime = { workers: [], animation: 0, timer: 0, safetyTimer: 0, stop: null, running: false, all: false };
     const results = { cpu: null, gpu: null, memory: null };
-    const scoreReference = { cpuOpsPerSecond: 80000000, gpu: { width: 1280, height: 720, iterations: 12, fps: 60 }, memoryMBps: 25000 };
+    const scoreReference = { cpuOpsPerSecond: 80000000, gpu: { width: 1280, height: 720, iterations: 12, frameTimeMs: 1000 / 60 }, memoryMBps: 25000 };
     const gpuProfiles = {
       gentle: { label: "轻盈 · 540p", width: 960, height: 540, iterations: 6 },
       balanced: { label: "标准 · 720p", width: 1280, height: 720, iterations: 12 },
-      intense: { label: "极限 · 1080p", width: 1920, height: 1080, iterations: 16 }
+      intense: { label: "极限 · 1080p", width: 1920, height: 1080, iterations: 16 },
+      fiveK: { label: "原生 · 5K", width: 5120, height: 2880, iterations: 16 }
     };
     let hardwareSnapshot = null;
 
@@ -511,16 +517,32 @@
 
     function runGpu(duration) {
       const canvas = $("#gpuCanvas");
-      const gl = canvas.getContext("webgl", { alpha: false, antialias: false, powerPreference: "high-performance", preserveDrawingBuffer: true });
+      const contextOptions = { alpha: false, antialias: false, powerPreference: "high-performance" };
+      const gl = canvas.getContext("webgl2", contextOptions) || canvas.getContext("webgl", contextOptions);
       if (!gl) {
         $("#gpuResult").textContent = "WebGL 不可用";
         $("#sceneStatus").textContent = "此设备未启用 WebGL";
         return Promise.resolve(false);
       }
+      const isWebGL2 = typeof gl.createQuery === "function";
+      const timerExtension = gl.getExtension(isWebGL2 ? "EXT_disjoint_timer_query_webgl2" : "EXT_disjoint_timer_query");
       const profile = gpuProfiles[$("#gpuProfile").value] || gpuProfiles.balanced;
-      const vertexSource = "attribute vec2 aPosition; void main(){gl_Position=vec4(aPosition,0.0,1.0);}";
-      const fragmentSource = `
-        precision highp float;
+      const viewportLimit = Array.from(gl.getParameter(gl.MAX_VIEWPORT_DIMS) || [0, 0]);
+      const maxTextureSize = Number(gl.getParameter(gl.MAX_TEXTURE_SIZE)) || 0;
+      const maxRenderbufferSize = Number(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE)) || 0;
+      const maxWidth = Math.min(viewportLimit[0] || 0, maxTextureSize, maxRenderbufferSize);
+      const maxHeight = Math.min(viewportLimit[1] || 0, maxTextureSize, maxRenderbufferSize);
+      if (profile.width > maxWidth || profile.height > maxHeight) {
+        $("#gpuResult").textContent = `设备上限 ${maxWidth}×${maxHeight}`;
+        $("#sceneStatus").textContent = `${profile.label} 超出 GPU 上限`;
+        $("#renderSize").textContent = `上限 ${maxWidth}×${maxHeight}`;
+        $("#runState").textContent = `这张显卡/驱动的最大安全视口为 ${maxWidth}×${maxHeight}；没有创建超限画布。`;
+        return Promise.resolve(false);
+      }
+      const vertexSource = isWebGL2
+        ? "#version 300 es\nin vec2 aPosition; void main(){gl_Position=vec4(aPosition,0.0,1.0);}"
+        : "attribute vec2 aPosition; void main(){gl_Position=vec4(aPosition,0.0,1.0);}";
+      let fragmentSource = `
         uniform vec2 uResolution;
         uniform float uTime;
         uniform float uIterations;
@@ -574,6 +596,11 @@
           float vignette = 1.0 - smoothstep(0.18, 1.45, length(uv));
           gl_FragColor = vec4(color * vignette, 1.0);
         }`;
+      if (isWebGL2) {
+        fragmentSource = `#version 300 es\nprecision highp float;\nout vec4 fragColor;\n${fragmentSource.replace("precision highp float;", "").replaceAll("gl_FragColor", "fragColor")}`;
+      } else {
+        fragmentSource = `precision highp float;\n${fragmentSource}`;
+      }
       function compile(type, source) {
         const shader = gl.createShader(type);
         gl.shaderSource(shader, source);
@@ -611,6 +638,10 @@
       let frames = 0;
       let peakFps = 0;
       let done = false;
+      let timerQueryFailed = false;
+      let checkingThermals = false;
+      const pendingGpuQueries = [];
+      const gpuTimeSamples = [];
       const frameRates = [];
       let lastHudUpdate = startedAt;
       let resolvePromise;
@@ -622,30 +653,100 @@
       $("#lowFps").textContent = "-- FPS";
       $("#peakFps").textContent = "0 FPS";
       $("#frameTime").textContent = "-- ms";
+      $("#gpuFrameTime").textContent = timerExtension ? "等待 GPU 查询" : "不支持";
+      $("#measurementMode").textContent = timerExtension ? "GPU 执行时间 · 异步 timer query" : "GPU 计时扩展不可用 · FPS 受显示器刷新率限制";
       $("#fpsTrace").setAttribute("points", "");
       $("#fpsArea").setAttribute("d", "");
       $("#gpuResult").textContent = "运行中";
-      $("#runState").textContent = "看着画面跑。FPS 是窗口实际绘制节奏，不是预先生成的模拟值。";
-      const finish = (wasStopped = false) => {
+      $("#runState").textContent = "显示 FPS 是窗口呈现节奏；GPU 执行毫秒单独异步测量，两者不会混为一谈。";
+      const deleteGpuQuery = (query) => {
+        if (isWebGL2) gl.deleteQuery(query);
+        else timerExtension?.deleteQueryEXT(query);
+      };
+      const collectGpuQueries = () => {
+        if (!timerExtension || timerQueryFailed) return;
+        let disjoint = false;
+        try { disjoint = Boolean(gl.getParameter(timerExtension.GPU_DISJOINT_EXT)); } catch { timerQueryFailed = true; }
+        if (disjoint) {
+          while (pendingGpuQueries.length) deleteGpuQuery(pendingGpuQueries.pop().query);
+          gpuTimeSamples.length = 0;
+          return;
+        }
+        for (let index = pendingGpuQueries.length - 1; index >= 0; index--) {
+          const entry = pendingGpuQueries[index];
+          let available = false;
+          let nanoseconds = 0;
+          try {
+            available = isWebGL2
+              ? gl.getQueryParameter(entry.query, gl.QUERY_RESULT_AVAILABLE)
+              : timerExtension.getQueryObjectEXT(entry.query, timerExtension.QUERY_RESULT_AVAILABLE_EXT);
+            if (available) nanoseconds = isWebGL2
+              ? gl.getQueryParameter(entry.query, gl.QUERY_RESULT)
+              : timerExtension.getQueryObjectEXT(entry.query, timerExtension.QUERY_RESULT_EXT);
+          } catch {
+            timerQueryFailed = true;
+          }
+          if (available || timerQueryFailed) {
+            pendingGpuQueries.splice(index, 1);
+            deleteGpuQuery(entry.query);
+            if (!timerQueryFailed && Number.isFinite(nanoseconds) && nanoseconds > 0) gpuTimeSamples.push(nanoseconds / 1000000);
+          }
+        }
+        if (timerQueryFailed) $("#measurementMode").textContent = "GPU timer query 中断 · 仅保留呈现 FPS";
+      };
+      const beginGpuQuery = () => {
+        if (!timerExtension || timerQueryFailed || pendingGpuQueries.length >= 4) return null;
+        const query = isWebGL2 ? gl.createQuery() : timerExtension.createQueryEXT();
+        if (!query) return null;
+        try {
+          if (isWebGL2) gl.beginQuery(timerExtension.TIME_ELAPSED_EXT, query);
+          else timerExtension.beginQueryEXT(timerExtension.TIME_ELAPSED_EXT, query);
+          return query;
+        } catch {
+          deleteGpuQuery(query);
+          timerQueryFailed = true;
+          return null;
+        }
+      };
+      const endGpuQuery = (query) => {
+        if (!query) return;
+        try {
+          if (isWebGL2) gl.endQuery(timerExtension.TIME_ELAPSED_EXT);
+          else timerExtension.endQueryEXT(timerExtension.TIME_ELAPSED_EXT);
+          pendingGpuQueries.push({ query, frame: frames });
+        } catch {
+          deleteGpuQuery(query);
+          timerQueryFailed = true;
+        }
+      };
+      const finish = (wasStopped = false, stopReason = "user-stopped") => {
         if (done) return;
         done = true;
         cancelAnimationFrame(runtime.animation);
         clearInterval(runtime.timer);
+        clearInterval(runtime.safetyTimer);
+        collectGpuQueries();
         const elapsedMs = Math.max(1, performance.now() - startedAt);
         const averageFps = frames / elapsedMs * 1000;
         const orderedRates = [...frameRates].sort((first, second) => first - second);
         const low1Fps = orderedRates.length ? orderedRates[Math.max(0, Math.floor(orderedRates.length * 0.01) - 1)] : 0;
+        const validGpuTimes = gpuTimeSamples.filter((sample) => Number.isFinite(sample) && sample > 0);
+        const averageGpuMs = validGpuTimes.length ? validGpuTimes.reduce((sum, sample) => sum + sample, 0) / validGpuTimes.length : null;
+        const sortedGpuTimes = [...validGpuTimes].sort((first, second) => first - second);
+        const p95GpuMs = sortedGpuTimes.length ? sortedGpuTimes[Math.min(sortedGpuTimes.length - 1, Math.ceil(sortedGpuTimes.length * 0.95) - 1)] : null;
         if (!wasStopped) {
-          results.gpu = { fps: averageFps, low1Fps, peakFps, frameTimeMs: elapsedMs / Math.max(1, frames), frames, elapsedMs, profile: profile.label, width: profile.width, height: profile.height, iterations: profile.iterations, frameRates: [...frameRates] };
-          $("#gpuResult").textContent = `${averageFps.toFixed(1)} FPS · 1% low ${low1Fps.toFixed(1)}`;
+          results.gpu = { fps: averageFps, low1Fps, peakFps, frameTimeMs: elapsedMs / Math.max(1, frames), gpuTimeMsAverage: timerExtension && !timerQueryFailed ? averageGpuMs : null, gpuTimeMsP95: timerExtension && !timerQueryFailed ? p95GpuMs : null, gpuTimerSupported: Boolean(timerExtension && !timerQueryFailed && averageGpuMs), gpuTimerSamples: validGpuTimes.length, frames, elapsedMs, profile: profile.label, width: profile.width, height: profile.height, iterations: profile.iterations, frameRates: [...frameRates] };
+          $("#gpuResult").textContent = averageGpuMs ? `${averageGpuMs.toFixed(2)} GPU ms · 显示 ${averageFps.toFixed(1)} FPS` : `显示 ${averageFps.toFixed(1)} FPS · GPU 计时不可用`;
           $("#sceneStatus").textContent = `测试完成 · ${profile.label}`;
-          $("#runState").textContent = "一轮完成。帧率曲线留在画面里，想确认成绩可以换档再跑。";
+          $("#measurementMode").textContent = averageGpuMs ? `GPU 执行耗时：${averageGpuMs.toFixed(2)} ms 平均 / ${p95GpuMs.toFixed(2)} ms P95 · ${validGpuTimes.length} 次查询` : "GPU timer query 不可用 · 本轮仅测呈现 FPS，不计算 GPU 分数";
+          $("#runState").textContent = averageGpuMs ? "显示 FPS 与 GPU 执行时间分开统计；可切换分辨率比较 GPU 的实际吞吐。" : "这台设备没有可用的异步 GPU 计时扩展，FPS 会受显示器刷新率限制，未纳入 GPU 得分。";
         } else {
           results.gpu = null;
           $("#gpuResult").textContent = "已停止";
-          $("#sceneStatus").textContent = "已停止 · 画面保留";
-          $("#runState").textContent = "测试已停止，实时画面保留供你查看。";
+          $("#sceneStatus").textContent = stopReason === "thermal-limit" ? "温度保护 · 已停止" : "已停止 · 画面保留";
+          $("#runState").textContent = stopReason === "thermal-limit" ? "CPU 或 GPU 温度达到 90°C，测试已自动停止。" : "测试已停止，实时画面保留供你查看。";
         }
+        while (pendingGpuQueries.length) deleteGpuQuery(pendingGpuQueries.pop().query);
         runtime.stop = null;
         $("#gpuStage").classList.remove("is-running");
         resolvePromise(!wasStopped);
@@ -657,6 +758,14 @@
         $("#gpuTimer").textContent = `${Math.max(0, Math.ceil((duration - elapsedMs) / 1000))} 秒剩余`;
         if (progress >= 1) finish();
       }, 100);
+      runtime.safetyTimer = setInterval(() => {
+        if (checkingThermals || !window.rigcheck?.readThermals) return;
+        checkingThermals = true;
+        window.rigcheck.readThermals().then((reading) => {
+          checkingThermals = false;
+          if (!done && (reading.cpu >= 90 || reading.gpus.some((gpu) => gpu.temperature >= 90))) finish(true, "thermal-limit");
+        }).catch(() => { checkingThermals = false; });
+      }, 2000);
       const updateChart = () => {
         const visible = frameRates.slice(-48);
         if (!visible.length) return;
@@ -669,6 +778,7 @@
       };
       const draw = (now) => {
         if (done) return;
+        collectGpuQueries();
         const delta = now - previousFrameAt;
         previousFrameAt = now;
         if (delta > 0 && frames > 0) {
@@ -680,7 +790,9 @@
         gl.uniform1f(timeUniform, (now - startedAt) / 1000);
         gl.uniform2f(resolutionUniform, profile.width, profile.height);
         gl.uniform1f(iterationsUniform, profile.iterations);
+        const gpuQuery = frames % 4 === 0 ? beginGpuQuery() : null;
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        endGpuQuery(gpuQuery);
         frames++;
         if (now - lastHudUpdate >= 250) {
           const averageFps = frames / Math.max(1, now - startedAt) * 1000;
@@ -689,6 +801,8 @@
           $("#liveFps").textContent = averageFps.toFixed(1);
           $("#frameTime").textContent = `${(1000 / Math.max(0.1, averageFps)).toFixed(2)} ms`;
           $("#lowFps").textContent = sorted.length ? `${sorted[lowIndex].toFixed(1)} FPS` : "-- FPS";
+          const currentGpuTimes = gpuTimeSamples.filter((sample) => Number.isFinite(sample) && sample > 0);
+          $("#gpuFrameTime").textContent = currentGpuTimes.length ? `${(currentGpuTimes.reduce((sum, sample) => sum + sample, 0) / currentGpuTimes.length).toFixed(2)} ms` : timerExtension ? "采集中" : "不支持";
           updateChart();
           lastHudUpdate = now;
         }
@@ -724,12 +838,20 @@
       }
     }
 
-    function updateScore() {
-      const subScores = {
+    function calculateSubScores() {
+      const referenceWorkPerMs = scoreReference.gpu.width * scoreReference.gpu.height * scoreReference.gpu.iterations / scoreReference.gpu.frameTimeMs;
+      const gpuWorkPerMs = results.gpu?.gpuTimeMsAverage
+        ? results.gpu.width * results.gpu.height * results.gpu.iterations / results.gpu.gpuTimeMsAverage
+        : null;
+      return {
         cpu: results.cpu ? Math.min(100, results.cpu.operationsPerSecond / scoreReference.cpuOpsPerSecond * 100) : null,
-        gpu: results.gpu ? Math.min(100, results.gpu.fps * (results.gpu.width * results.gpu.height * results.gpu.iterations) / (scoreReference.gpu.fps * scoreReference.gpu.width * scoreReference.gpu.height * scoreReference.gpu.iterations) * 100) : null,
+        gpu: gpuWorkPerMs ? Math.min(100, gpuWorkPerMs / referenceWorkPerMs * 100) : null,
         memory: results.memory ? Math.min(100, results.memory.megabytesPerSecond / scoreReference.memoryMBps * 100) : null
       };
+    }
+
+    function updateScore() {
+      const subScores = calculateSubScores();
       const available = Object.values(subScores).filter((score) => score !== null).length;
       if (!available) return;
       const weights = { cpu: 40, gpu: 40, memory: 20 };
@@ -747,13 +869,40 @@
       if (available === 3) saveLeaderboard(score);
     }
 
+    function showPerformanceGuide() {
+      const platform = `${hardwareSnapshot?.operatingSystem?.distro || ""} ${hardwareSnapshot?.operatingSystem?.arch || ""}`.toLowerCase();
+      const tips = [];
+      if (platform.includes("windows")) {
+        tips.push("插上原装电源后，在 Windows“设置 > 系统 > 电源和电池”把电源模式调到最佳性能；测试和游戏时保持插电。应用不会代你更改系统电源计划。");
+      } else if (platform.includes("darwin") || platform.includes("mac")) {
+        tips.push("MacBook 插电使用，并在“系统设置 > 电池”确认低电量模式未限制性能；避免遮挡底部和转轴附近进风/出风区域。");
+      } else {
+        tips.push("连接设备原装电源，在操作系统官方电源设置中选择性能优先模式；笔记本仅在散热正常时持续高负载。");
+      }
+      if (hardwareSnapshot?.temperature?.main >= 85) {
+        tips.push(`本次扫描 CPU 温度已达 ${hardwareSnapshot.temperature.main}°C。先停掉高负载任务、清理风道并改善摆放；温度降下来前不要继续压力测试。`);
+      } else {
+        tips.push("保持进/出风口畅通、硬质平面使用并定期除尘。笔记本 CPU 与 GPU 常共享散热预算，降温通常比强行拉频更能保持持续性能。");
+      }
+      tips.push("更新对应机型的厂商芯片组/显卡驱动；先检查后台占用，再比较同一档位的 GPU 执行毫秒与温度。不要关闭温控或超压。");
+      tips.push("超频能力由芯片、主板、固件、散热与保修条款决定。很多 MacBook 和轻薄本锁定倍频；任何工具都不能安全保证 3 倍性能。本应用不会写入时钟、电压、固件或风扇设置。");
+      if (!hardwareSnapshot) tips.unshift("先扫描设备，建议才能按操作系统和温度显示；当前建议仅供参考。");
+      const list = $("#performanceTips");
+      list.replaceChildren();
+      tips.forEach((tip) => {
+        const item = document.createElement("li");
+        item.textContent = tip;
+        list.append(item);
+      });
+      $("#performanceSummary").textContent = hardwareSnapshot
+        ? `${hardwareSnapshot.operatingSystem.distro || "当前系统"} · ${hardwareSnapshot.cpu.brand || "CPU 型号未提供"} · 建议基于本机信息生成；只提供可逆设置，不代替硬件操作。`
+        : "尚未扫描硬件；先按通用安全建议操作。";
+      $("#performanceDialog").showModal();
+    }
+
     async function exportReport() {
       const appVersion = window.rigcheck?.getAppVersion ? await window.rigcheck.getAppVersion() : "网页预览";
-      const subScores = {
-        cpu: results.cpu ? Math.min(100, results.cpu.operationsPerSecond / scoreReference.cpuOpsPerSecond * 100) : null,
-        gpu: results.gpu ? Math.min(100, results.gpu.fps * (results.gpu.width * results.gpu.height * results.gpu.iterations) / (scoreReference.gpu.fps * scoreReference.gpu.width * scoreReference.gpu.height * scoreReference.gpu.iterations) * 100) : null,
-        memory: results.memory ? Math.min(100, results.memory.megabytesPerSecond / scoreReference.memoryMBps * 100) : null
-      };
+      const subScores = calculateSubScores();
       const weights = { cpu: 40, gpu: 40, memory: 20 };
       const measured = Object.entries(subScores).filter(([, value]) => value !== null);
       const measuredWeight = measured.reduce((total, [key]) => total + weights[key], 0);
@@ -829,11 +978,16 @@
     $("#scoreHelp").addEventListener("click", () => scoreDialog.showModal());
     $("#scoreHelpSide").addEventListener("click", () => scoreDialog.showModal());
     $("#closeScoreDialog").addEventListener("click", () => scoreDialog.close());
+    $("#performanceGuide").addEventListener("click", showPerformanceGuide);
+    $("#closePerformanceDialog").addEventListener("click", () => $("#performanceDialog").close());
     $("#exportReport").addEventListener("click", exportReport);
     $("#gpuProfile").addEventListener("change", () => {
       const profile = gpuProfiles[$("#gpuProfile").value];
       $("#sceneStatus").textContent = `${hardwareSnapshot?.graphics?.[0]?.model || "Mandelbulb"} · ${profile.label}`;
       $("#renderSize").textContent = `${profile.width}×${profile.height}`;
+      if ($("#gpuProfile").value === "fiveK") {
+        $("#runState").textContent = "5K = 14.7 百万像素，每个 RGBA 帧缓冲约 56 MiB；需检查散热，只在 5K viewport 受支持时运行。";
+      }
     });
     $("#stopButton").addEventListener("click", () => stopCurrentTest());
     $("#scanButton").addEventListener("click", () => { detectDevice(); $("#runState").textContent = "设备信息已重新扫描。"; });
@@ -851,16 +1005,17 @@
         return;
       }
       runtime.all = true;
+      let completed = true;
       for (const type of ["cpu", "gpu", "memory"]) {
         const passed = await runOne(type);
-        if (!passed) break;
+        if (!passed) { completed = false; break; }
         if (type !== "memory") { setBusy(false); $("#progressWrap").style.display = "none"; updateScore(); }
       }
       runtime.all = false;
       setBusy(false);
       $("#progressWrap").style.display = "none";
       updateScore();
-      $("#runState").textContent = "完整测试流程结束。";
+      if (completed) $("#runState").textContent = "完整测试流程结束；只有三项都取得有效分数才会记录排行榜。";
     });
     detectDevice();
     renderLeaderboard();

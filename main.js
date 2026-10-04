@@ -120,6 +120,21 @@ async function scanHardware(event) {
   };
 }
 
+async function readThermals(event) {
+  assertTrustedWindow(event);
+  const [cpu, graphics] = await Promise.all([
+    safeRead(() => si.cpuTemperature(), {}),
+    safeRead(() => si.graphics(), { controllers: [] })
+  ]);
+  return {
+    cpu: Number(cpu.main) || 0,
+    gpus: (graphics.controllers || []).map((controller) => ({
+      model: controller.model || controller.name || "",
+      temperature: Number(controller.temperatureGpu) || 0
+    }))
+  };
+}
+
 function finishCpuRun(stopped, reason) {
   const run = activeCpuRun;
   if (!run) return null;
@@ -215,6 +230,7 @@ function createWindow() {
 }
 
 ipcMain.handle("hardware:scan", scanHardware);
+ipcMain.handle("hardware:thermals", readThermals);
 ipcMain.handle("app:version", (event) => {
   assertTrustedWindow(event);
   return app.getVersion();
