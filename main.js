@@ -22,15 +22,19 @@ async function safeRead(reader, fallback) {
 
 async function scanHardware(event) {
   assertTrustedWindow(event);
-  const [cpu, memory, graphics, board, bios, disks, temperature, operatingSystem] = await Promise.all([
+  const [cpu, memory, memoryModules, graphics, board, bios, disks, temperature, operatingSystem, audio, network, usb] = await Promise.all([
     safeRead(() => si.cpu(), {}),
     safeRead(() => si.mem(), {}),
+    safeRead(() => si.memLayout(), []),
     safeRead(() => si.graphics(), { controllers: [] }),
     safeRead(() => si.baseboard(), {}),
     safeRead(() => si.bios(), {}),
     safeRead(() => si.diskLayout(), []),
     safeRead(() => si.cpuTemperature(), {}),
-    safeRead(() => si.osInfo(), {})
+    safeRead(() => si.osInfo(), {}),
+    safeRead(() => si.audio(), []),
+    safeRead(() => si.networkInterfaces(), []),
+    safeRead(() => si.usb(), [])
   ]);
 
   return {
@@ -38,6 +42,7 @@ async function scanHardware(event) {
       manufacturer: cpu.manufacturer || "",
       brand: cpu.brand || "",
       speed: cpu.speed || 0,
+      speedMax: cpu.speedMax || 0,
       cores: cpu.physicalCores || 0,
       threads: cpu.processors || os.cpus().length
     },
@@ -45,11 +50,30 @@ async function scanHardware(event) {
       total: memory.total || 0,
       available: memory.available || memory.free || 0
     },
+    memoryModules: memoryModules.map((module) => ({
+      model: module.partNum || module.bank || "",
+      manufacturer: module.manufacturer || "",
+      size: module.size || 0,
+      speed: module.clockSpeed || 0,
+      type: module.type || ""
+    })),
     graphics: (graphics.controllers || []).map((controller) => ({
       model: controller.model || controller.name || "",
       vendor: controller.vendor || "",
       vram: controller.vram || 0,
-      driver: controller.driverVersion || ""
+      driver: controller.driverVersion || "",
+      bus: controller.bus || "",
+      temperature: Number(controller.temperatureGpu) || 0,
+      utilization: Number(controller.utilizationGpu) || 0,
+      fanSpeed: Number(controller.fanSpeed) || 0,
+      powerDraw: Number(controller.powerDraw) || 0
+    })),
+    displays: (graphics.displays || []).map((display) => ({
+      model: display.model || display.deviceName || display.name || "",
+      manufacturer: display.vendor || display.manufacturer || "",
+      resolution: display.resolutionX && display.resolutionY ? `${display.resolutionX} × ${display.resolutionY}` : "",
+      refreshRate: Number(display.currentRefreshRate) || Number(display.refreshRate) || 0,
+      connection: display.connection || ""
     })),
     board: {
       manufacturer: board.manufacturer || "",
@@ -63,11 +87,26 @@ async function scanHardware(event) {
     },
     disks: disks.map((disk) => ({
       name: disk.name || disk.type || "存储设备",
+      model: disk.name || "",
       vendor: disk.vendor || "",
       type: disk.type || "",
       size: disk.size || 0,
       interfaceType: disk.interfaceType || "",
       health: disk.smartStatus || ""
+    })),
+    audio: audio.map((device) => ({
+      model: device.name || "",
+      manufacturer: device.manufacturer || "",
+      type: device.type || ""
+    })),
+    network: network.filter((device) => !device.internal && !device.virtual).map((device) => ({
+      model: device.vendor || device.name || "",
+      type: device.type || "",
+      speed: device.speed || 0
+    })),
+    usb: usb.map((device) => ({
+      model: device.name || device.device || "",
+      manufacturer: device.manufacturer || device.vendor || ""
     })),
     temperature: {
       main: Number(temperature.main) || 0,
@@ -176,6 +215,10 @@ function createWindow() {
 }
 
 ipcMain.handle("hardware:scan", scanHardware);
+ipcMain.handle("app:version", (event) => {
+  assertTrustedWindow(event);
+  return app.getVersion();
+});
 ipcMain.handle("stress:cpu:start", startCpuRun);
 ipcMain.handle("stress:cpu:stop", stopCpuRun);
 

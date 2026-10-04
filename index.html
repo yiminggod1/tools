@@ -8,16 +8,16 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #111815;
-      --panel: #19221e;
-      --panel-raised: #202b25;
-      --line: #334039;
-      --text: #edf3ed;
-      --muted: #9eaca2;
-      --mint: #a9f36b;
-      --cyan: #6ddbd0;
-      --amber: #ffc36e;
-      --red: #ff8373;
+      --bg: #111615;
+      --panel: #19211f;
+      --panel-raised: #222d29;
+      --line: #35433d;
+      --text: #f0f2e9;
+      --muted: #a5b0a8;
+      --mint: #c2ed72;
+      --cyan: #65d5c7;
+      --amber: #ffc178;
+      --red: #ff8277;
       --serif: Georgia, "Noto Serif SC", serif;
       --sans: "Noto Sans SC", "Microsoft YaHei", sans-serif;
     }
@@ -25,7 +25,7 @@
     body {
       margin: 0;
       min-width: 320px;
-      background: radial-gradient(ellipse at 92% 2%, #26382a 0, transparent 29rem), var(--bg);
+      background: radial-gradient(ellipse at 88% 0%, #314233 0, transparent 34rem), radial-gradient(ellipse at 2% 36%, #292820 0, transparent 30rem), var(--bg);
       color: var(--text);
       font: 14px/1.5 var(--sans);
     }
@@ -134,84 +134,227 @@
       .test-controls { align-items: start; flex-direction: column; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; } }
+    .shell { width: min(1400px, calc(100% - 64px)); }
+    header { height: 78px; }
+    .brand-mark { width: 34px; height: 34px; font-size: 17px; }
+    main { padding-top: 20px; }
+    .intro { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(380px, .95fr); align-items: stretch; gap: 30px; margin-bottom: 18px; }
+    .hero-copy { padding: 26px 0 20px; }
+    .hero-copy .eyebrow { font-size: 11px; }
+    h1 { font-size: 46px; line-height: 1.15; margin: 12px 0 14px; }
+    .hero-copy p { max-width: 560px; font-size: 15px; line-height: 1.75; }
+    .hero-actions { display: flex; gap: 10px; margin-top: 21px; }
+    .primary-button, .scan-button { min-height: 42px; padding: 10px 17px; }
+    .hero-proof { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 20px; color: var(--muted); font-size: 11px; }
+    .hero-proof strong { color: var(--text); font-weight: 650; }
+    .score-panel { grid-template-columns: 146px 1fr; min-height: 250px; align-self: stretch; gap: 22px; padding: 23px; background: linear-gradient(145deg, #202b25, #18201e 70%); }
+    .score-ring { width: 136px; }
+    .score-value strong { font-size: 39px; }
+    .score-copy h2 { font-size: 20px; }
+    .score-copy p { line-height: 1.6; }
+    .score-stats { gap: 24px; margin-top: 16px; }
+    .score-stats strong { font-variant-numeric: tabular-nums; }
+    .score-help { border: 0; border-bottom: 1px dotted var(--muted); padding: 0; background: none; color: var(--cyan); font-size: 11px; }
+    .score-caption { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .system-panel { padding: 21px; }
+    .system-panel .panel-heading { margin-bottom: 18px; }
+    .system-panel .panel-heading h2 { font-size: 17px; }
+    .system-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 22px; }
+    .spec { padding: 11px 0 9px; }
+    .spec span { font-size: 10px; letter-spacing: .03em; }
+    .spec strong { white-space: normal; overflow-wrap: anywhere; line-height: 1.5; font-size: 12px; }
+    .columns { grid-template-columns: minmax(0, 1.55fr) minmax(300px, .75fr); gap: 18px; }
+    .overview { grid-template-columns: minmax(0, 1fr); }
+    .tests { padding: 23px; }
+    .tests .panel-heading h2, .leaderboard .panel-heading h2 { font-size: 17px; }
+    .gpu-stage { position: relative; isolation: isolate; overflow: hidden; margin: 3px 0 13px; min-height: 275px; aspect-ratio: 16 / 9; border: 1px solid #3b4943; border-radius: 5px; background: radial-gradient(ellipse at 50% 48%, #31423a 0, #17201e 45%, #101615 100%); }
+    .gpu-stage::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: .28; background-image: linear-gradient(#98ae9c20 1px, transparent 1px), linear-gradient(90deg, #98ae9c20 1px, transparent 1px); background-size: 36px 36px; mask-image: linear-gradient(transparent, #000 35%, #000 75%, transparent); }
+    .gpu-stage canvas { width: 100%; height: 100%; position: absolute; inset: 0; visibility: hidden; }
+    .gpu-stage.is-running canvas { visibility: visible; }
+    .scene-placeholder { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; padding: 18px; transition: opacity .3s; }
+    .gpu-stage.is-running .scene-placeholder { opacity: 0; }
+    .scene-orbit { width: 91px; aspect-ratio: 1; position: relative; border: 1px solid #bedf9380; border-radius: 50%; box-shadow: 0 0 42px #a9df5730, inset 0 0 22px #a9df5720; animation: orbit-breathe 3.8s ease-in-out infinite; }
+    .scene-orbit::before, .scene-orbit::after { content: ""; position: absolute; inset: 12px -8px; border: 1px solid #65d5c760; border-radius: 50%; transform: rotate(58deg); }
+    .scene-orbit::after { transform: rotate(-58deg); border-color: #ffc17870; }
+    .scene-placeholder strong { display: block; margin-top: 14px; font: 20px/1.2 var(--serif); }
+    .scene-placeholder span { display: block; margin-top: 6px; color: var(--muted); font-size: 11px; }
+    @keyframes orbit-breathe { 50% { transform: scale(1.07) rotate(8deg); filter: brightness(1.3); } }
+    .stage-topline, .stage-bottomline { position: absolute; left: 17px; right: 17px; display: flex; justify-content: space-between; align-items: start; gap: 14px; pointer-events: none; }
+    .stage-topline { top: 15px; }
+    .stage-bottomline { bottom: 14px; align-items: end; }
+    .stage-label { max-width: 48%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #d9e3d9; font-size: 10px; letter-spacing: .11em; text-transform: uppercase; text-shadow: 0 2px 8px #000; }
+    .stage-fps { text-align: right; text-shadow: 0 2px 8px #000; }
+    .stage-fps strong { display: block; font: 32px/1 var(--serif); font-variant-numeric: tabular-nums; color: var(--mint); }
+    .stage-fps span { color: #d9e3d9; font-size: 9px; letter-spacing: .12em; }
+    .stage-metrics { display: flex; gap: 17px; color: #d5ded6; font-size: 10px; text-shadow: 0 2px 8px #000; }
+    .stage-metrics strong { display: block; color: #fff; font-size: 12px; font-variant-numeric: tabular-nums; }
+    .fps-chart-wrap { display: grid; grid-template-columns: 1fr 92px; gap: 13px; align-items: center; margin-bottom: 15px; }
+    .fps-chart { display: block; width: 100%; height: 58px; border-bottom: 1px solid var(--line); }
+    .fps-chart .chart-grid { stroke: #35433d; stroke-width: 1; }
+    .fps-chart .chart-area { fill: url(#fpsFill); }
+    .fps-chart .chart-line { fill: none; stroke: var(--mint); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .fps-peak { color: var(--muted); font-size: 9px; text-align: right; }
+    .fps-peak strong { display: block; color: var(--text); font-size: 15px; font-variant-numeric: tabular-nums; }
+    .test-selector { display: flex; align-items: center; gap: 8px; }
+    .duration, .gpu-profile { padding: 7px 9px; }
+    .test-row { grid-template-columns: 38px minmax(100px, 1fr) auto auto; gap: 13px; }
+    .test-row .run-button { grid-column: 4; }
+    .test-row .test-result { grid-column: 3; }
+    .test-controls { flex-wrap: wrap; justify-content: flex-start; }
+    .test-controls .primary-button { margin-left: auto; }
+    .test-result { font-variant-numeric: tabular-nums; }
+    .test-info p { line-height: 1.5; }
+    .leaderboard, .notice { border-radius: 5px; }
+    .benchmark-note { padding: 14px 15px; margin-top: 12px; border-left: 2px solid var(--amber); background: #24251e; color: #d9d1bd; font-size: 11px; line-height: 1.7; }
+    .benchmark-note strong { color: var(--amber); }
+    .report-button { display: inline-flex; align-items: center; gap: 7px; padding: 7px 0; border: 0; background: transparent; color: var(--cyan); font-size: 11px; }
+    .report-button:disabled { opacity: .45; cursor: not-allowed; }
+    .score-dialog { width: min(510px, calc(100% - 30px)); color: var(--text); background: #1b2420; border: 1px solid var(--line); border-radius: 7px; padding: 24px; }
+    .score-dialog::backdrop { background: #080d0bd9; backdrop-filter: blur(4px); }
+    .score-dialog h2 { margin: 0 0 14px; font: 25px/1.2 var(--serif); }
+    .score-dialog p, .score-dialog li { color: var(--muted); font-size: 12px; line-height: 1.8; }
+    .score-dialog ul { padding-left: 18px; }
+    .dialog-close { display: block; margin: 18px 0 0 auto; border: 0; border-radius: 4px; padding: 8px 13px; background: var(--mint); color: #142015; }
+    .score-breakdown { display: grid; gap: 8px; margin-top: 14px; }
+    .score-breakdown-row { display: grid; grid-template-columns: 1fr 52px; gap: 12px; font-size: 11px; }
+    .score-breakdown-row span { color: var(--muted); }
+    .score-breakdown-row strong { text-align: right; }
+    @media (max-width: 900px) {
+      .shell { width: min(100% - 36px, 720px); }
+      .intro { grid-template-columns: 1fr; gap: 14px; }
+      .hero-copy { padding: 18px 0 3px; }
+      .score-panel { min-height: 200px; }
+      .columns { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 28px, 460px); }
+      header { height: 64px; }
+      .header-right { font-size: 10px; }
+      main { padding-top: 9px; }
+      .hero-copy { padding-top: 18px; }
+      h1 { font-size: 35px; }
+      .hero-copy p { font-size: 13px; }
+      .hero-proof { gap: 9px 14px; }
+      .score-panel { grid-template-columns: 94px 1fr; padding: 16px; gap: 12px; }
+      .score-ring { width: 90px; }
+      .score-value strong { font-size: 29px; }
+      .score-copy h2 { font-size: 16px; }
+      .score-stats { gap: 14px; }
+      .system-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 13px; }
+      .system-panel, .tests { padding: 16px; }
+      .gpu-stage { min-height: 0; aspect-ratio: 16 / 9; }
+      .tests .panel-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
+      .test-selector { max-width: 100%; flex-wrap: wrap; }
+      .stage-topline, .stage-bottomline { left: 11px; right: 11px; }
+      .stage-fps strong { font-size: 26px; }
+      .stage-metrics { gap: 9px; font-size: 9px; }
+      .fps-chart-wrap { grid-template-columns: 1fr 70px; }
+      .test-row { grid-template-columns: 31px minmax(70px, 1fr) auto; gap: 8px; }
+      .test-row .test-result { grid-column: 3; grid-row: 1; }
+      .test-row .run-button { grid-column: 3; grid-row: 2; width: 59px; }
+      .test-row .test-info { grid-column: 2; grid-row: 1 / span 2; }
+      .test-controls { align-items: start; flex-direction: column; }
+      .test-controls .primary-button { margin-left: 0; }
+    }
   </style>
 </head>
 <body>
   <div class="shell">
     <header>
       <div class="brand"><div class="brand-mark">R</div><div>RigCheck<small>HARDWARE DIAGNOSTICS</small></div></div>
-      <div class="header-right"><span><i class="live-dot"></i>本机硬件检测已就绪</span><span>本地运行 · 不上传数据</span></div>
+      <div class="header-right"><span><i class="live-dot"></i>本机实验室已就绪</span><span>本地分析 · 不上传硬件数据</span></div>
     </header>
     <main>
       <section class="intro">
-        <div><div class="eyebrow">设备性能工作台 / 01</div><h1>让每一颗芯片都说话。</h1><p>读取本机硬件清单，运行可控基准测试，查看你的设备成绩。</p></div>
-        <button class="scan-button" id="scanButton" type="button">重新扫描设备</button>
+        <div class="hero-copy"><div class="eyebrow">YOUR RIG, IN MOTION</div><h1>别猜它有多快。<br>让它跑给你看。</h1><p>每台电脑都有自己的脾气。看清型号，跑一段真实的动态图形，再决定它适合做什么。</p><div class="hero-actions"><button class="primary-button" id="allTestsButton" type="button">开始完整体检</button><button class="scan-button" id="scanButton" type="button">重新扫描硬件</button></div><div class="hero-proof"><span><strong>本机运行</strong> · 数据不上传</span><span><strong>限时测试</strong> · 随时可停</span><span><strong>真实帧率</strong> · 边跑边看</span></div></div>
+        <div class="panel score-panel">
+          <div class="score-ring" id="scoreRing"><div class="score-value"><strong id="overallScore">--</strong><span>RIG / 100</span></div></div>
+          <div class="score-copy"><div class="score-caption"><span class="section-label">你的性能画像</span><button class="score-help" id="scoreHelp" type="button">分数怎么算？</button></div><h2 id="scoreTitle">还没开跑，先认识这台机器</h2><p id="scoreDescription">跑完 CPU、GPU 和内存后，分数才有意义。不是神秘评级，每一项都有明确参照。</p><div class="score-stats"><div><strong id="cpuSummary">--</strong><span>CPU / 100</span></div><div><strong id="gpuSummary">--</strong><span>GPU / 100</span></div><div><strong id="memorySummary">--</strong><span>RAM / 100</span></div></div></div>
+        </div>
       </section>
       <section class="overview">
-        <div class="panel score-panel">
-          <div class="score-ring" id="scoreRing"><div class="score-value"><strong id="overallScore">--</strong><span>RIG SCORE</span></div></div>
-          <div class="score-copy"><div class="section-label">综合性能指数</div><h2 id="scoreTitle">运行测试以生成成绩</h2><p id="scoreDescription">CPU 使用本机并行线程测试，图形与内存成绩反映当前应用环境，不等同于专业硬件认证跑分。</p><div class="score-stats"><div><strong id="cpuSummary">--</strong><span>CPU 分数</span></div><div><strong id="gpuSummary">--</strong><span>GPU 帧率</span></div><div><strong id="memorySummary">--</strong><span>内存速度</span></div></div></div>
-        </div>
         <div class="panel system-panel">
-          <div class="panel-heading"><h2>设备概览</h2><span class="tag">本机读取</span></div>
+          <div class="panel-heading"><h2>你的硬件档案</h2><span class="tag" id="hardwareCount">正在扫描</span></div>
           <div class="system-list">
             <div class="spec"><span>处理器</span><strong id="cpuInfo">检测中</strong></div>
-            <div class="spec"><span>物理核心 / 线程</span><strong id="cpuCoreInfo">检测中</strong></div>
+            <div class="spec"><span>核心 / 线程 · 最高频率</span><strong id="cpuCoreInfo">检测中</strong></div>
             <div class="spec"><span>内存</span><strong id="ramInfo">检测中</strong></div>
+            <div class="spec"><span>内存条型号</span><strong id="memoryModulesInfo">检测中</strong></div>
             <div class="spec"><span>显卡</span><strong id="gpuInfo">检测中</strong></div>
             <div class="spec"><span>显存 / 驱动</span><strong id="gpuMemoryInfo">检测中</strong></div>
+            <div class="spec"><span>GPU 温度 / 负载 / 风扇</span><strong id="gpuSensorsInfo">检测中</strong></div>
             <div class="spec"><span>主板</span><strong id="boardInfo">检测中</strong></div>
             <div class="spec"><span>BIOS</span><strong id="biosInfo">检测中</strong></div>
             <div class="spec"><span>磁盘</span><strong id="diskInfo">检测中</strong></div>
+            <div class="spec"><span>音频设备</span><strong id="audioInfo">检测中</strong></div>
+            <div class="spec"><span>网络设备</span><strong id="networkInfo">检测中</strong></div>
+            <div class="spec"><span>USB 外设</span><strong id="usbInfo">检测中</strong></div>
+            <div class="spec"><span>显示器型号</span><strong id="displayInfo">检测中</strong></div>
             <div class="spec"><span>CPU 温度</span><strong id="temperatureInfo">检测中</strong></div>
             <div class="spec"><span>操作系统</span><strong id="osInfo">检测中</strong></div>
-            <div class="spec"><span>屏幕分辨率</span><strong id="screenInfo">检测中</strong></div>
           </div>
         </div>
       </section>
       <section class="columns">
         <div class="panel tests">
-          <div class="panel-heading"><h2>基准与压力测试</h2><select class="duration" id="duration" aria-label="测试时长"><option value="10">10 秒 · 推荐</option><option value="20">20 秒</option><option value="30">30 秒 · 上限</option></select></div>
-          <div class="test-row"><div class="test-icon">CPU</div><div class="test-info"><strong>处理器多线程</strong><p>本机并行计算 · 最多启用 16 个线程</p></div><span class="test-result" id="cpuResult">未测试</span><button class="run-button" data-test="cpu" type="button">运行</button></div>
-          <div class="test-row"><div class="test-icon">GPU</div><div class="test-info"><strong>图形渲染负载</strong><p>WebGL 着色器运算 · 测量帧率</p></div><span class="test-result" id="gpuResult">未测试</span><button class="run-button" data-test="gpu" type="button">运行</button></div>
-          <div class="test-row"><div class="test-icon">RAM</div><div class="test-info"><strong>内存带宽抽测</strong><p>限量缓冲区读写 · 不测试容量</p></div><span class="test-result" id="memoryResult">未测试</span><button class="run-button" data-test="memory" type="button">运行</button></div>
-          <div class="test-controls"><label><input id="confirmStress" type="checkbox"> 我已保存工作，并确认设备散热正常</label><button class="primary-button" id="allTestsButton" type="button">运行完整测试</button><button class="stop-button" id="stopButton" type="button" hidden>停止测试</button></div>
+          <div class="panel-heading"><h2>实时图形基准</h2><div class="test-selector"><select class="gpu-profile" id="gpuProfile" aria-label="GPU 测试强度"><option value="gentle">轻盈 · 540p</option><option value="balanced" selected>标准 · 720p</option><option value="intense">极限 · 1080p</option></select><select class="duration" id="duration" aria-label="测试时长"><option value="10">10 秒</option><option value="20" selected>20 秒</option><option value="30">30 秒</option></select></div></div>
+          <div class="gpu-stage" id="gpuStage"><canvas id="gpuCanvas" aria-label="实时 Mandelbulb 图形压力测试画面"></canvas><div class="scene-placeholder"><div><div class="scene-orbit"></div><strong>光线步进 · Mandelbulb</strong><span>启动 GPU 测试，看看帧率如何随场景变化</span></div></div><div class="stage-topline"><span class="stage-label" id="sceneStatus">待机 · 标准强度</span><div class="stage-fps"><strong id="liveFps">--</strong><span>LIVE FPS</span></div></div><div class="stage-bottomline"><div class="stage-metrics"><div>平均帧时间<strong id="frameTime">-- ms</strong></div><div>1% low<strong id="lowFps">-- FPS</strong></div><div>渲染尺寸<strong id="renderSize">--</strong></div></div><span class="stage-label" id="gpuTimer">等待开跑</span></div></div>
+          <div class="fps-chart-wrap"><svg class="fps-chart" viewBox="0 0 360 58" preserveAspectRatio="none" aria-label="实时 FPS 帧率曲线"><defs><linearGradient id="fpsFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#c2ed72" stop-opacity=".28"/><stop offset="1" stop-color="#c2ed72" stop-opacity="0"/></linearGradient></defs><path class="chart-grid" d="M0 14H360 M0 29H360 M0 44H360"/><path id="fpsArea" class="chart-area" d=""/><polyline id="fpsTrace" class="chart-line" points=""/></svg><div class="fps-peak">本轮峰值<strong id="peakFps">-- FPS</strong></div></div>
+          <div class="test-row"><div class="test-icon">CPU</div><div class="test-info"><strong>处理器多线程</strong><p>本机并行计算 · 最多启用 16 个线程</p></div><span class="test-result" id="cpuResult">待测</span><button class="run-button" data-test="cpu" type="button">运行</button></div>
+          <div class="test-row"><div class="test-icon">GPU</div><div class="test-info"><strong>动态图形渲染</strong><p>真实场景 FPS · 帧时间与 1% low</p></div><span class="test-result" id="gpuResult">待测</span><button class="run-button" data-test="gpu" type="button">运行</button></div>
+          <div class="test-row"><div class="test-icon">RAM</div><div class="test-info"><strong>内存读写带宽</strong><p>实际缓冲区读写 · 不占满系统内存</p></div><span class="test-result" id="memoryResult">待测</span><button class="run-button" data-test="memory" type="button">运行</button></div>
+          <div class="test-controls"><label><input id="confirmStress" type="checkbox"> 我已保存工作，并确认设备散热正常</label><button class="report-button" id="exportReport" type="button" disabled>导出本次报告</button><button class="stop-button" id="stopButton" type="button" hidden>停止测试</button></div>
           <div class="progress-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div><div class="run-state" id="runState" aria-live="polite">单项最长 30 秒；CPU 温度传感器可用时，超过 90°C 自动停止。</div>
         </div>
         <aside class="side-stack">
-          <div class="panel leaderboard"><div class="panel-heading"><h2>本机排行榜</h2><span class="local-note">仅此浏览器保存</span></div><div class="leader-head"><span>名次</span><span>成绩记录</span><span style="text-align:right">总分</span></div><div id="leaderRows"></div></div>
-          <div class="notice"><strong>测试边界与安全提示</strong><p>CPU、内存、主板、显卡及磁盘信息通过本机接口读取，传感器是否可用取决于系统和驱动。网页图形 API 无法保证 GPU 达到 100% 负载，也不会执行磁盘写入压力测试。单项最长 30 秒；温度传感器可用时，CPU 超过 90°C 自动停止。跨用户排行榜需要服务端。</p></div>
+          <div class="benchmark-note"><strong>分数不是玄学。</strong>按 CPU 40%、GPU 40%、内存 20% 加权；各项满分都对应固定参照值。GPU 测试依赖屏幕刷新率，优先在“标准 · 720p”下比较。<button class="score-help" id="scoreHelpSide" type="button">查看完整评分说明</button></div>
+          <div class="notice"><strong>对这台机器的尊重</strong><p>CPU 压测最多 30 秒，传感器可用时达到 90°C 自动停止。显卡、风扇和电源读数受驱动与系统限制；磁盘只读取型号和健康信息，不写入压力数据。温度或风扇异常时请立即停止。</p></div>
+          <div class="panel leaderboard"><div class="panel-heading"><h2>本机成绩簿</h2><span class="local-note">仅保存在这台电脑</span></div><div class="leader-head"><span>名次</span><span>完成日期</span><span style="text-align:right">RIG</span></div><div id="leaderRows"></div></div>
         </aside>
       </section>
     </main>
   </div>
+  <dialog class="score-dialog" id="scoreDialog"><h2>这份分数代表什么？</h2><p>RIG 是本应用内的 0–100 性能画像，不是行业标准，也不冒充硬件认证。完整跑完三项后，按以下权重加权；未测项目不计入，并标出完成率。</p><div class="score-breakdown"><div class="score-breakdown-row"><span>CPU · 80,000,000 次基准运算 / 秒 = 100 分</span><strong>40%</strong></div><div class="score-breakdown-row"><span>GPU · 1280×720、12 次 Mandelbulb 迭代、60 FPS = 100 分</span><strong>40%</strong></div><div class="score-breakdown-row"><span>内存 · 25,000 MB/s 实际读写 = 100 分</span><strong>20%</strong></div></div><ul><li>单项分数到 100 封顶，低于基准按比例显示。</li><li>GPU FPS 会受显示器刷新率、测试档位和窗口尺寸影响；请用相同档位比较。</li><li>不同系统、应用版本和散热环境会影响结果；更适合对比同一台设备的前后变化。</li></ul><button class="dialog-close" id="closeScoreDialog" type="button">明白了</button></dialog>
   <div class="toast" id="toast" role="status"></div>
   <script>
     const $ = (selector) => document.querySelector(selector);
     let cpuThreads = Math.max(1, navigator.hardwareConcurrency || 2);
     const runtime = { workers: [], animation: 0, timer: 0, stop: null, running: false, all: false };
     const results = { cpu: null, gpu: null, memory: null };
+    const scoreReference = { cpuOpsPerSecond: 80000000, gpu: { width: 1280, height: 720, iterations: 12, fps: 60 }, memoryMBps: 25000 };
+    const gpuProfiles = {
+      gentle: { label: "轻盈 · 540p", width: 960, height: 540, iterations: 6 },
+      balanced: { label: "标准 · 720p", width: 1280, height: 720, iterations: 12 },
+      intense: { label: "极限 · 1080p", width: 1920, height: 1080, iterations: 16 }
+    };
+    let hardwareSnapshot = null;
 
     async function detectDevice() {
       if (window.rigcheck?.scanHardware) {
         $("#runState").textContent = "正在读取本机硬件信息…";
         try {
           const hardware = await window.rigcheck.scanHardware();
+          hardwareSnapshot = hardware;
           cpuThreads = Math.max(1, hardware.cpu.threads || cpuThreads);
-          $("#cpuInfo").textContent = hardware.cpu.brand || "系统未提供";
-          $("#cpuCoreInfo").textContent = `${hardware.cpu.cores || "?"} 核 / ${hardware.cpu.threads || cpuThreads} 线程`;
+          $("#cpuInfo").textContent = [hardware.cpu.manufacturer, hardware.cpu.brand].filter(Boolean).join(" ") || "处理器型号未提供";
+          $("#cpuCoreInfo").textContent = `${hardware.cpu.cores || "?"} 核 / ${hardware.cpu.threads || cpuThreads} 线程 · 最高 ${hardware.cpu.speedMax || hardware.cpu.speed || "?"} GHz`;
           $("#ramInfo").textContent = hardware.memory.total ? `${(hardware.memory.total / 1024 ** 3).toFixed(1)} GB` : "系统未提供";
+          $("#memoryModulesInfo").textContent = hardware.memoryModules.length ? hardware.memoryModules.map((module) => `${[module.manufacturer, module.model].filter(Boolean).join(" ") || "模块型号未提供"} · ${module.size ? `${(module.size / 1024 ** 3).toFixed(0)} GB` : "容量未知"}${module.speed ? ` · ${module.speed} MHz` : ""}${module.type ? ` ${module.type}` : ""}`).join(" / ") : "系统未提供内存条型号";
           const graphics = hardware.graphics.filter((item) => item.model || item.vendor);
-          $("#gpuInfo").textContent = graphics.map((item) => `${item.vendor} ${item.model}`.trim()).join(" / ") || "系统未提供";
-          const vram = graphics.reduce((total, item) => total + (item.vram || 0), 0);
-          const drivers = [...new Set(graphics.map((item) => item.driver).filter(Boolean))];
-          $("#gpuMemoryInfo").textContent = [vram ? `${vram} MB` : "显存未知", drivers.length ? `驱动 ${drivers.join(", ")}` : "驱动未知"].join(" · ");
-          $("#boardInfo").textContent = [hardware.board.manufacturer, hardware.board.model, hardware.board.version].filter(Boolean).join(" ") || "系统未提供";
+          $("#gpuInfo").textContent = graphics.map((item, index) => `GPU ${index + 1}: ${[item.vendor, item.model].filter(Boolean).join(" ")}`).join(" / ") || "系统未提供显卡型号";
+          $("#gpuMemoryInfo").textContent = graphics.map((item, index) => `GPU ${index + 1}: ${item.vram ? `${item.vram} MB` : "显存未知"}${item.driver ? ` · ${item.driver}` : ""}`).join(" / ") || "驱动与显存未提供";
+          $("#gpuSensorsInfo").textContent = graphics.map((item, index) => `GPU ${index + 1}: ${item.temperature ? `${item.temperature}°C` : "温度未知"} · ${item.utilization ? `${item.utilization}%` : "负载未知"}${item.fanSpeed ? ` · 风扇 ${item.fanSpeed}%` : ""}${item.powerDraw ? ` · ${item.powerDraw} W` : ""}`).join(" / ") || "显卡传感器未提供";
+          $("#boardInfo").textContent = [hardware.board.manufacturer, hardware.board.model, hardware.board.version].filter(Boolean).join(" ") || "主板型号未提供";
           $("#biosInfo").textContent = [hardware.bios.vendor, hardware.bios.version, hardware.bios.releaseDate].filter(Boolean).join(" · ") || "系统未提供";
-          $("#diskInfo").textContent = hardware.disks.map((disk) => `${disk.vendor} ${disk.name} · ${disk.size ? `${(disk.size / 1024 ** 3).toFixed(0)} GB` : "容量未知"}${disk.health ? ` · ${disk.health}` : ""}`).join(" / ") || "系统未提供";
+          $("#diskInfo").textContent = hardware.disks.map((disk, index) => `盘 ${index + 1}: ${[disk.vendor, disk.model || disk.name].filter(Boolean).join(" ") || "型号未提供"} · ${disk.size ? `${(disk.size / 1024 ** 3).toFixed(0)} GB` : "容量未知"}${disk.interfaceType ? ` · ${disk.interfaceType}` : ""}${disk.health ? ` · ${disk.health}` : ""}`).join(" / ") || "未发现磁盘型号";
+          $("#audioInfo").textContent = hardware.audio.length ? hardware.audio.map((device) => [device.manufacturer, device.model, device.type].filter(Boolean).join(" · ") || "音频设备型号未提供").join(" / ") : "未发现独立音频设备";
+          $("#networkInfo").textContent = hardware.network.length ? hardware.network.map((device) => `${device.model || "网卡型号未提供"}${device.speed ? ` · ${device.speed} Mbps` : ""}`).join(" / ") : "系统未提供网卡型号";
+          $("#usbInfo").textContent = hardware.usb.length ? hardware.usb.map((device) => [device.manufacturer, device.model].filter(Boolean).join(" ") || "USB 设备型号未提供").join(" / ") : "未发现 USB 外设型号";
+          $("#displayInfo").textContent = hardware.displays.length ? hardware.displays.map((display) => `${[display.manufacturer, display.model].filter(Boolean).join(" ") || "显示器型号未提供"}${display.resolution ? ` · ${display.resolution}` : ""}${display.refreshRate ? ` · ${display.refreshRate} Hz` : ""}`).join(" / ") : "系统未提供显示器型号";
           $("#temperatureInfo").textContent = hardware.temperature.main > 0 ? `${hardware.temperature.main}°C` : "传感器不可用";
           $("#osInfo").textContent = [hardware.operatingSystem.distro, hardware.operatingSystem.release, hardware.operatingSystem.arch].filter(Boolean).join(" · ") || "系统未提供";
-          $("#screenInfo").textContent = `${screen.width} × ${screen.height}`;
+          $("#hardwareCount").textContent = "已扫描 16 项信息";
+          $("#sceneStatus").textContent = `${graphics[0]?.model || "GPU 型号待确认"} · 待机`;
           $("#runState").textContent = "本机硬件信息读取完成。";
         } catch {
           $("#runState").textContent = "本机硬件扫描失败，请重试。";
@@ -221,13 +364,19 @@
       $("#cpuInfo").textContent = "浏览器隐藏具体型号";
       $("#cpuCoreInfo").textContent = `${cpuThreads} 个逻辑线程`;
       $("#ramInfo").textContent = navigator.deviceMemory ? `约 ${navigator.deviceMemory} GB（粗略值）` : "浏览器未提供";
+      $("#memoryModulesInfo").textContent = "桌面应用模式可读取内存条型号";
       $("#gpuMemoryInfo").textContent = "桌面应用模式可读取";
+      $("#gpuSensorsInfo").textContent = "桌面应用模式可读取";
       $("#boardInfo").textContent = "桌面应用模式可读取";
       $("#biosInfo").textContent = "桌面应用模式可读取";
       $("#diskInfo").textContent = "桌面应用模式可读取";
+      $("#audioInfo").textContent = "桌面应用模式可读取";
+      $("#networkInfo").textContent = "桌面应用模式可读取";
+      $("#usbInfo").textContent = "桌面应用模式可读取";
+      $("#displayInfo").textContent = "桌面应用模式可读取";
       $("#temperatureInfo").textContent = "浏览器不可读取";
       $("#osInfo").textContent = navigator.platform || "浏览器未提供";
-      $("#screenInfo").textContent = `${screen.width} × ${screen.height}`;
+      $("#hardwareCount").textContent = "有限浏览器权限";
       let renderer = "WebGL 不可用";
       const canvas = document.createElement("canvas");
       const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
@@ -245,6 +394,8 @@
       $("#allTestsButton").disabled = busy;
       $("#stopButton").hidden = !busy;
       $("#duration").disabled = busy;
+      $("#gpuProfile").disabled = busy;
+      $("#exportReport").disabled = busy || !Object.values(results).some(Boolean);
     }
 
     function stopCurrentTest(message = "测试已停止。") {
@@ -307,8 +458,8 @@
             $("#progressWrap").style.display = "none";
             return false;
           }
-          results.cpu = Math.round(result.operations / Math.max(1, result.elapsedMs) * 10);
-          $("#cpuResult").textContent = `${results.cpu.toLocaleString()} 分 · ${result.threads} 线程`;
+          results.cpu = { operations: result.operations, operationsPerSecond: result.operations / Math.max(1, result.elapsedMs) * 1000, threads: result.threads, elapsedMs: result.elapsedMs };
+          $("#cpuResult").textContent = `${(results.cpu.operationsPerSecond / 1000000).toFixed(1)} M op/s · ${result.threads}T`;
           if (!stopRequested) $("#runState").textContent = "CPU 测试完成。";
           return true;
         } catch {
@@ -349,8 +500,8 @@
           runtime.stop = null;
           if (!wasStopped) {
             const elapsed = Math.max(1, Math.min(duration, getElapsed()));
-            results.cpu = Math.round(operations / elapsed * 10);
-            $("#cpuResult").textContent = `${results.cpu.toLocaleString()} 分`;
+            results.cpu = { operations, operationsPerSecond: operations / elapsed * 1000, threads: count, elapsedMs: elapsed };
+            $("#cpuResult").textContent = `${(results.cpu.operationsPerSecond / 1000000).toFixed(1)} M op/s · ${count}T`;
           }
           resolve(!wasStopped);
         }
@@ -359,14 +510,70 @@
     }
 
     function runGpu(duration) {
-      const canvas = document.createElement("canvas");
-      const gl = canvas.getContext("webgl", { alpha: false, antialias: false, powerPreference: "high-performance" });
+      const canvas = $("#gpuCanvas");
+      const gl = canvas.getContext("webgl", { alpha: false, antialias: false, powerPreference: "high-performance", preserveDrawingBuffer: true });
       if (!gl) {
         $("#gpuResult").textContent = "WebGL 不可用";
+        $("#sceneStatus").textContent = "此设备未启用 WebGL";
         return Promise.resolve(false);
       }
-      const vertexSource = "attribute vec2 p; void main(){gl_Position=vec4(p,0.0,1.0);}";
-      const fragmentSource = "precision mediump float; uniform float t; uniform vec2 r; void main(){vec2 uv=gl_FragCoord.xy/r; float v=0.0; for(int i=0;i<40;i++){uv=abs(uv)/dot(uv,uv)-0.71; v+=sin(uv.x+float(i)*0.12+t)*cos(uv.y-float(i)*0.09);} gl_FragColor=vec4(abs(sin(v)),abs(cos(v*0.7)),abs(sin(v*0.4)),1.0);}";
+      const profile = gpuProfiles[$("#gpuProfile").value] || gpuProfiles.balanced;
+      const vertexSource = "attribute vec2 aPosition; void main(){gl_Position=vec4(aPosition,0.0,1.0);}";
+      const fragmentSource = `
+        precision highp float;
+        uniform vec2 uResolution;
+        uniform float uTime;
+        uniform float uIterations;
+        float mandelbulb(vec3 point) {
+          vec3 z = point;
+          float derivative = 1.0;
+          float radius = 0.0;
+          for (int index = 0; index < 16; index++) {
+            if (float(index) >= uIterations || radius > 4.0) break;
+            radius = length(z);
+            float safeRadius = max(radius, 0.00001);
+            float theta = acos(clamp(z.z / safeRadius, -1.0, 1.0));
+            float phi = atan(z.y, z.x);
+            derivative = pow(safeRadius, 7.0) * 8.0 * derivative + 1.0;
+            float raisedRadius = pow(safeRadius, 8.0);
+            theta *= 8.0;
+            phi *= 8.0;
+            z = raisedRadius * vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta)) + point;
+          }
+          return 0.5 * log(max(radius, 0.00001)) * radius / derivative;
+        }
+        void main() {
+          vec2 uv = (gl_FragCoord.xy - 0.5 * uResolution) / uResolution.y;
+          float time = uTime * 0.28;
+          vec3 origin = vec3(4.2 * sin(time), 1.1 + 0.22 * sin(time * 0.7), 4.2 * cos(time));
+          vec3 forward = normalize(-origin);
+          vec3 right = normalize(cross(forward, vec3(0.0, 1.0, 0.0)));
+          vec3 up = cross(right, forward);
+          vec3 ray = normalize(uv.x * right + uv.y * up + 1.55 * forward);
+          float travel = 0.0;
+          float hit = 0.0;
+          vec3 point = origin;
+          for (int step = 0; step < 52; step++) {
+            point = origin + ray * travel;
+            float distanceToSurface = mandelbulb(point);
+            if (distanceToSurface < 0.0012) { hit = 1.0; break; }
+            travel += distanceToSurface * 0.78;
+            if (travel > 10.0) break;
+          }
+          vec3 color = vec3(0.025, 0.045, 0.04) + 0.08 * vec3(max(0.0, uv.y), 0.25, max(0.0, -uv.y));
+          if (hit > 0.5) {
+            vec3 normal = normalize(point + 0.08 * vec3(sin(point.y * 7.0), cos(point.z * 7.0), sin(point.x * 7.0)));
+            vec3 light = normalize(vec3(-0.4, 0.8, 0.7));
+            float diffuse = max(dot(normal, light), 0.0);
+            float rim = pow(1.0 - max(dot(normal, -ray), 0.0), 2.0);
+            float bands = 0.5 + 0.5 * sin(point.y * 9.0 + point.x * 4.0 + uTime * 0.55);
+            vec3 palette = 0.48 + 0.45 * cos(6.28318 * (vec3(0.02, 0.34, 0.63) + bands * 0.24 + vec3(0.0, 0.07, 0.13)));
+            color = palette * (0.28 + diffuse * 0.8) + vec3(0.39, 0.83, 0.48) * rim * 0.7;
+            color *= exp(-travel * 0.035);
+          }
+          float vignette = 1.0 - smoothstep(0.18, 1.45, length(uv));
+          gl_FragColor = vec4(color * vignette, 1.0);
+        }`;
       function compile(type, source) {
         const shader = gl.createShader(type);
         gl.shaderSource(shader, source);
@@ -380,71 +587,135 @@
         gl.attachShader(program, compile(gl.VERTEX_SHADER, vertexSource));
         gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragmentSource));
         gl.linkProgram(program);
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error("WebGL program link failed");
-      } catch {
-        $("#gpuResult").textContent = "着色器不可用";
-        gl.getExtension("WEBGL_lose_context")?.loseContext();
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
+      } catch (error) {
+        $("#gpuResult").textContent = "着色器无法运行";
+        $("#sceneStatus").textContent = error.message.slice(0, 90);
         return Promise.resolve(false);
       }
-      const width = Math.min(1280, Math.max(320, innerWidth * .8 | 0));
-      const height = Math.min(720, Math.max(240, innerHeight * .55 | 0));
-      canvas.width = width;
-      canvas.height = height;
-      gl.viewport(0, 0, width, height);
+      canvas.width = profile.width;
+      canvas.height = profile.height;
+      gl.viewport(0, 0, profile.width, profile.height);
       gl.useProgram(program);
       const buffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-      const position = gl.getAttribLocation(program, "p");
+      const position = gl.getAttribLocation(program, "aPosition");
       gl.enableVertexAttribArray(position);
       gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+      const timeUniform = gl.getUniformLocation(program, "uTime");
+      const resolutionUniform = gl.getUniformLocation(program, "uResolution");
+      const iterationsUniform = gl.getUniformLocation(program, "uIterations");
       const startedAt = performance.now();
+      let previousFrameAt = startedAt;
       let frames = 0;
+      let peakFps = 0;
       let done = false;
-      const release = () => { gl.getExtension("WEBGL_lose_context")?.loseContext(); };
+      const frameRates = [];
+      let lastHudUpdate = startedAt;
+      let resolvePromise;
+      const promise = new Promise((resolve) => { resolvePromise = resolve; });
+      $("#gpuStage").classList.add("is-running");
+      $("#sceneStatus").textContent = `${hardwareSnapshot?.graphics?.[0]?.model || "GPU 渲染"} · ${profile.label}`;
+      $("#renderSize").textContent = `${profile.width}×${profile.height}`;
+      $("#liveFps").textContent = "0";
+      $("#lowFps").textContent = "-- FPS";
+      $("#peakFps").textContent = "0 FPS";
+      $("#frameTime").textContent = "-- ms";
+      $("#fpsTrace").setAttribute("points", "");
+      $("#fpsArea").setAttribute("d", "");
+      $("#gpuResult").textContent = "运行中";
+      $("#runState").textContent = "看着画面跑。FPS 是窗口实际绘制节奏，不是预先生成的模拟值。";
       const finish = (wasStopped = false) => {
         if (done) return;
         done = true;
         cancelAnimationFrame(runtime.animation);
         clearInterval(runtime.timer);
-        const elapsed = Math.max(1, performance.now() - startedAt);
-        results.gpu = Math.round(frames / elapsed * 1000);
-        $("#gpuResult").textContent = `${results.gpu} FPS`;
-        release();
+        const elapsedMs = Math.max(1, performance.now() - startedAt);
+        const averageFps = frames / elapsedMs * 1000;
+        const orderedRates = [...frameRates].sort((first, second) => first - second);
+        const low1Fps = orderedRates.length ? orderedRates[Math.max(0, Math.floor(orderedRates.length * 0.01) - 1)] : 0;
+        if (!wasStopped) {
+          results.gpu = { fps: averageFps, low1Fps, peakFps, frameTimeMs: elapsedMs / Math.max(1, frames), frames, elapsedMs, profile: profile.label, width: profile.width, height: profile.height, iterations: profile.iterations, frameRates: [...frameRates] };
+          $("#gpuResult").textContent = `${averageFps.toFixed(1)} FPS · 1% low ${low1Fps.toFixed(1)}`;
+          $("#sceneStatus").textContent = `测试完成 · ${profile.label}`;
+          $("#runState").textContent = "一轮完成。帧率曲线留在画面里，想确认成绩可以换档再跑。";
+        } else {
+          results.gpu = null;
+          $("#gpuResult").textContent = "已停止";
+          $("#sceneStatus").textContent = "已停止 · 画面保留";
+          $("#runState").textContent = "测试已停止，实时画面保留供你查看。";
+        }
         runtime.stop = null;
-        if (wasStopped) { setBusy(false); $("#progressWrap").style.display = "none"; $("#runState").textContent = "测试已停止。"; }
+        $("#gpuStage").classList.remove("is-running");
         resolvePromise(!wasStopped);
       };
-      let resolvePromise;
-      const promise = new Promise((resolve) => { resolvePromise = resolve; });
-      const elapsed = beginProgress("GPU 图形渲染压力测试", duration, () => finish());
-      const draw = () => {
+      runtime.timer = setInterval(() => {
+        const elapsedMs = performance.now() - startedAt;
+        const progress = Math.min(1, elapsedMs / duration);
+        $("#progressBar").style.width = `${progress * 100}%`;
+        $("#gpuTimer").textContent = `${Math.max(0, Math.ceil((duration - elapsedMs) / 1000))} 秒剩余`;
+        if (progress >= 1) finish();
+      }, 100);
+      const updateChart = () => {
+        const visible = frameRates.slice(-48);
+        if (!visible.length) return;
+        const maxRate = Math.max(60, Math.ceil(Math.max(...visible) / 30) * 30);
+        const points = visible.map((rate, index) => `${(index / Math.max(1, visible.length - 1) * 360).toFixed(1)},${(53 - Math.min(1, rate / maxRate) * 48).toFixed(1)}`);
+        const path = `M0 58 L${points.join(" L")} L360 58 Z`;
+        $("#fpsTrace").setAttribute("points", points.join(" "));
+        $("#fpsArea").setAttribute("d", path);
+        $("#peakFps").textContent = `${peakFps.toFixed(1)} FPS`;
+      };
+      const draw = (now) => {
         if (done) return;
-        gl.uniform1f(gl.getUniformLocation(program, "t"), elapsed() / 1000);
-        gl.uniform2f(gl.getUniformLocation(program, "r"), width, height);
+        const delta = now - previousFrameAt;
+        previousFrameAt = now;
+        if (delta > 0 && frames > 0) {
+          const instantFps = 1000 / delta;
+          frameRates.push(instantFps);
+          if (frameRates.length > 1200) frameRates.shift();
+          peakFps = Math.max(peakFps, instantFps);
+        }
+        gl.uniform1f(timeUniform, (now - startedAt) / 1000);
+        gl.uniform2f(resolutionUniform, profile.width, profile.height);
+        gl.uniform1f(iterationsUniform, profile.iterations);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         frames++;
+        if (now - lastHudUpdate >= 250) {
+          const averageFps = frames / Math.max(1, now - startedAt) * 1000;
+          const sorted = [...frameRates].sort((first, second) => first - second);
+          const lowIndex = Math.max(0, Math.floor(sorted.length * 0.01) - 1);
+          $("#liveFps").textContent = averageFps.toFixed(1);
+          $("#frameTime").textContent = `${(1000 / Math.max(0.1, averageFps)).toFixed(2)} ms`;
+          $("#lowFps").textContent = sorted.length ? `${sorted[lowIndex].toFixed(1)} FPS` : "-- FPS";
+          updateChart();
+          lastHudUpdate = now;
+        }
         runtime.animation = requestAnimationFrame(draw);
       };
       runtime.stop = () => finish(true);
-      draw();
+      $("#progressWrap").style.display = "block";
+      $("#progressBar").style.width = "0%";
+      draw(startedAt);
       return promise;
     }
 
     function runMemory() {
-      const deviceLimit = navigator.deviceMemory ? Math.max(8, Math.min(32, navigator.deviceMemory * 8)) : 16;
-      const bytes = Math.min(32, deviceLimit) * 1024 * 1024;
+      const bytes = 32 * 1024 * 1024;
       let buffer;
       const startedAt = performance.now();
       try {
         buffer = new Uint8Array(bytes);
-        for (let index = 0; index < buffer.length; index += 64) buffer[index] = index & 255;
+        buffer.fill(127);
         let checksum = 0;
-        for (let index = 0; index < buffer.length; index += 64) checksum += buffer[index];
+        for (let index = 0; index < buffer.length; index += 4) checksum += buffer[index];
         const elapsed = Math.max(1, performance.now() - startedAt);
-        results.memory = Math.round(bytes / elapsed * 1000 / (1024 * 1024));
-        $("#memoryResult").textContent = `${results.memory} MB/s`;
-        return Promise.resolve(Boolean(checksum >= 0));
+        const bytesTransferred = bytes + bytes / 4;
+        const megabytesPerSecond = bytesTransferred / elapsed * 1000 / (1024 * 1024);
+        results.memory = { megabytesPerSecond, bytes, elapsedMs: elapsed, checksum };
+        $("#memoryResult").textContent = `${megabytesPerSecond.toFixed(0)} MB/s`;
+        return Promise.resolve(checksum >= 0);
       } catch {
         $("#memoryResult").textContent = "分配受限";
         return Promise.resolve(false);
@@ -454,22 +725,51 @@
     }
 
     function updateScore() {
-      const available = [results.cpu !== null, results.gpu !== null, results.memory !== null].filter(Boolean).length;
+      const subScores = {
+        cpu: results.cpu ? Math.min(100, results.cpu.operationsPerSecond / scoreReference.cpuOpsPerSecond * 100) : null,
+        gpu: results.gpu ? Math.min(100, results.gpu.fps * (results.gpu.width * results.gpu.height * results.gpu.iterations) / (scoreReference.gpu.fps * scoreReference.gpu.width * scoreReference.gpu.height * scoreReference.gpu.iterations) * 100) : null,
+        memory: results.memory ? Math.min(100, results.memory.megabytesPerSecond / scoreReference.memoryMBps * 100) : null
+      };
+      const available = Object.values(subScores).filter((score) => score !== null).length;
       if (!available) return;
-      const normalized = [results.cpu ? Math.min(100, Math.log10(results.cpu + 1) * 18) : null, results.gpu ? Math.min(100, results.gpu / 2) : null, results.memory ? Math.min(100, results.memory / 8) : null].filter((score) => score !== null);
-      const score = Math.round(normalized.reduce((sum, value) => sum + value, 0) / normalized.length);
+      const weights = { cpu: 40, gpu: 40, memory: 20 };
+      const measuredWeight = Object.entries(subScores).reduce((total, [key, value]) => total + (value === null ? 0 : weights[key]), 0);
+      const score = Math.round(Object.entries(subScores).reduce((total, [key, value]) => total + (value === null ? 0 : value * weights[key]), 0) / measuredWeight);
       $("#overallScore").textContent = score;
       $("#scoreRing").style.setProperty("--score-angle", `${score * 3.6}deg`);
-      $("#scoreTitle").textContent = available === 3 ? "本机测试已完成" : "部分测试已完成";
-      $("#scoreDescription").textContent = `${available}/3 项浏览器基准测试完成；分数仅用于同一设备和浏览器环境内对比。`;
-      $("#cpuSummary").textContent = results.cpu?.toLocaleString() ?? "--";
-      $("#gpuSummary").textContent = results.gpu ? `${results.gpu} FPS` : "--";
-      $("#memorySummary").textContent = results.memory ? `${results.memory} MB/s` : "--";
-      saveLeaderboard(score);
+      const verdict = score < 35 ? "刚好够用，先让它轻松一点" : score < 55 ? "日常挺稳，重活看项目而定" : score < 75 ? "底气不错，可以接更多任务" : score < 90 ? "这台机器很能打" : "火力全开，成绩漂亮";
+      $("#scoreTitle").textContent = available === 3 ? verdict : `已完成 ${available}/3 项 · ${verdict}`;
+      $("#scoreDescription").textContent = `RIG ${score}/100 · CPU ${subScores.cpu === null ? "—" : Math.round(subScores.cpu)} · GPU ${subScores.gpu === null ? "—" : Math.round(subScores.gpu)} · RAM ${subScores.memory === null ? "—" : Math.round(subScores.memory)}。按固定参考值换算，可展开查看公式。`;
+      $("#cpuSummary").textContent = subScores.cpu === null ? "--" : Math.round(subScores.cpu);
+      $("#gpuSummary").textContent = subScores.gpu === null ? "--" : Math.round(subScores.gpu);
+      $("#memorySummary").textContent = subScores.memory === null ? "--" : Math.round(subScores.memory);
+      $("#exportReport").disabled = false;
+      if (available === 3) saveLeaderboard(score);
+    }
+
+    async function exportReport() {
+      const appVersion = window.rigcheck?.getAppVersion ? await window.rigcheck.getAppVersion() : "网页预览";
+      const subScores = {
+        cpu: results.cpu ? Math.min(100, results.cpu.operationsPerSecond / scoreReference.cpuOpsPerSecond * 100) : null,
+        gpu: results.gpu ? Math.min(100, results.gpu.fps * (results.gpu.width * results.gpu.height * results.gpu.iterations) / (scoreReference.gpu.fps * scoreReference.gpu.width * scoreReference.gpu.height * scoreReference.gpu.iterations) * 100) : null,
+        memory: results.memory ? Math.min(100, results.memory.megabytesPerSecond / scoreReference.memoryMBps * 100) : null
+      };
+      const weights = { cpu: 40, gpu: 40, memory: 20 };
+      const measured = Object.entries(subScores).filter(([, value]) => value !== null);
+      const measuredWeight = measured.reduce((total, [key]) => total + weights[key], 0);
+      const overall = measuredWeight ? Math.round(measured.reduce((total, [key, value]) => total + value * weights[key], 0) / measuredWeight) : null;
+      const report = { app: "RigCheck", version: appVersion, generatedAt: new Date().toISOString(), hardware: hardwareSnapshot, scoreReference, scores: { overall, completedTests: measured.length, weights, components: subScores }, tests: results };
+      const url = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2)], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `rigcheck-report-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      $("#runState").textContent = "报告已导出到下载目录。硬件型号随报告一并保存，请在分享前确认内容。";
     }
 
     function saveLeaderboard(score) {
-      const key = "rigcheck-scores-v1";
+      const key = "rigcheck-scores-v2";
       let scores = [];
       try { scores = JSON.parse(localStorage.getItem(key) || "[]"); } catch { scores = []; }
       if (scores.some((item) => item.score === score)) return renderLeaderboard();
@@ -482,7 +782,7 @@
     function renderLeaderboard() {
       const target = $("#leaderRows");
       let scores = [];
-      try { scores = JSON.parse(localStorage.getItem("rigcheck-scores-v1") || "[]"); } catch { scores = []; }
+      try { scores = JSON.parse(localStorage.getItem("rigcheck-scores-v2") || "[]"); } catch { scores = []; }
       target.replaceChildren();
       if (!scores.length) {
         const empty = document.createElement("div");
@@ -510,6 +810,8 @@
       if (runtime.running) return false;
       if (!$("#confirmStress").checked) {
         $("#runState").textContent = "请先确认已保存工作，并确认设备散热正常。";
+        $("#confirmStress").focus({ preventScroll: true });
+        $("#confirmStress").scrollIntoView({ behavior: "smooth", block: "center" });
         return false;
       }
       setBusy(true);
@@ -518,11 +820,21 @@
       if (type === "gpu") return runGpu(duration);
       const passed = await runMemory();
       setBusy(false);
-      $("#runState").textContent = passed ? "内存带宽抽测完成；未尝试占满系统内存。" : "内存抽测未能完成。";
+      $("#runState").textContent = passed ? "内存读写完成；32 MB 缓冲区已释放，没有占满系统内存。" : "内存抽测未能完成。";
       updateScore();
       return passed;
     }
 
+    const scoreDialog = $("#scoreDialog");
+    $("#scoreHelp").addEventListener("click", () => scoreDialog.showModal());
+    $("#scoreHelpSide").addEventListener("click", () => scoreDialog.showModal());
+    $("#closeScoreDialog").addEventListener("click", () => scoreDialog.close());
+    $("#exportReport").addEventListener("click", exportReport);
+    $("#gpuProfile").addEventListener("change", () => {
+      const profile = gpuProfiles[$("#gpuProfile").value];
+      $("#sceneStatus").textContent = `${hardwareSnapshot?.graphics?.[0]?.model || "Mandelbulb"} · ${profile.label}`;
+      $("#renderSize").textContent = `${profile.width}×${profile.height}`;
+    });
     $("#stopButton").addEventListener("click", () => stopCurrentTest());
     $("#scanButton").addEventListener("click", () => { detectDevice(); $("#runState").textContent = "设备信息已重新扫描。"; });
     document.querySelectorAll(".run-button").forEach((button) => button.addEventListener("click", async () => {
@@ -532,6 +844,12 @@
     }));
     $("#allTestsButton").addEventListener("click", async () => {
       if (runtime.running) return;
+      if (!$("#confirmStress").checked) {
+        $("#runState").textContent = "先确认保存好工作并检查散热，我们再开始测试。";
+        $("#confirmStress").focus({ preventScroll: true });
+        $("#confirmStress").scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
       runtime.all = true;
       for (const type of ["cpu", "gpu", "memory"]) {
         const passed = await runOne(type);
