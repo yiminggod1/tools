@@ -1,15 +1,15 @@
 {
   "name": "rigcheck-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Cross-platform desktop hardware diagnostics and benchmarks",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder",
-    "dist:linux": "electron-builder --linux AppImage",
-    "dist:windows": "electron-builder --win nsis",
-    "dist:mac": "electron-builder --mac dmg",
+    "dist": "electron-builder --publish never",
+    "dist:linux": "electron-builder --linux AppImage --publish never",
+    "dist:windows": "electron-builder --win nsis --publish never",
+    "dist:mac": "electron-builder --mac dmg --publish never",
     "check": "node --check main.js && node --check preload.js && node --check cpu-worker.js"
   },
   "dependencies": {
@@ -27,14 +27,20 @@
       "output": "release"
     },
     "linux": {
-      "target": ["AppImage"],
+      "target": [
+        "AppImage"
+      ],
       "category": "Utility"
     },
     "win": {
-      "target": ["nsis"]
+      "target": [
+        "nsis"
+      ]
     },
     "mac": {
-      "target": ["dmg"]
+      "target": [
+        "dmg"
+      ]
     }
   }
 }
