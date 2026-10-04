@@ -1,0 +1,70 @@
+name: Build and publish desktop installers
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run dist:windows
+      - shell: pwsh
+        run: |
+          $installer = Get-ChildItem -Path release -Filter '*.exe' | Select-Object -First 1
+          if (-not $installer) { throw 'Windows installer was not produced.' }
+          Move-Item $installer.FullName 'release/RigCheck-windows-x64.exe' -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: release/RigCheck-windows-x64.exe
+          if-no-files-found: error
+
+  macos:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run dist:mac -- --${{ matrix.arch }}
+      - shell: bash
+        run: |
+          dmg="$(find release -maxdepth 1 -type f -name '*.dmg' -print -quit)"
+          test -n "$dmg"
+          mv "$dmg" "release/RigCheck-macos-${{ matrix.arch }}.dmg"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}-installer
+          path: release/RigCheck-macos-${{ matrix.arch }}.dmg
+          if-no-files-found: error
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: installers
+          merge-multiple: true
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" installers/RigCheck-* --title "RigCheck $GITHUB_REF_NAME" --generate-notes --verify-tag

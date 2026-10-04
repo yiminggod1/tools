@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111815">
+  <title>硬件体检台 | RigCheck</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111815;
+      --panel: #19221e;
+      --panel-raised: #202b25;
+      --line: #334039;
+      --text: #edf3ed;
+      --muted: #9eaca2;
+      --mint: #a9f36b;
+      --cyan: #6ddbd0;
+      --amber: #ffc36e;
+      --red: #ff8373;
+      --serif: Georgia, "Noto Serif SC", serif;
+      --sans: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: radial-gradient(ellipse at 92% 2%, #26382a 0, transparent 29rem), var(--bg);
+      color: var(--text);
+      font: 14px/1.5 var(--sans);
+    }
+    button, select, input { font: inherit; }
+    button { color: inherit; cursor: pointer; }
+    .shell { width: min(1320px, calc(100% - 48px)); margin: 0 auto; }
+    header {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 750; letter-spacing: .02em; }
+    .brand-mark { width: 29px; height: 29px; display: grid; place-items: center; background: var(--mint); color: #122015; border-radius: 7px; font-size: 15px; }
+    .brand small { display: block; color: var(--muted); font-size: 10px; font-weight: 500; letter-spacing: .15em; }
+    .header-right { color: var(--muted); font-size: 12px; display: flex; gap: 18px; align-items: center; }
+    .live-dot { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 12px #a9f36b88; }
+    main { padding: 35px 0 60px; }
+    .intro { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 25px; }
+    .eyebrow { color: var(--mint); text-transform: uppercase; font-size: 10px; letter-spacing: .16em; font-weight: 700; }
+    h1 { font: 500 43px/1.1 var(--serif); letter-spacing: 0; margin: 8px 0 7px; }
+    .intro p { color: var(--muted); margin: 0; }
+    .scan-button, .primary-button { border: 0; background: var(--mint); color: #142015; border-radius: 5px; font-weight: 750; padding: 11px 16px; }
+    .scan-button:hover, .primary-button:hover { background: #c4ff91; }
+    .overview { display: grid; grid-template-columns: 1.22fr .78fr; gap: 16px; margin-bottom: 16px; }
+    .panel { border: 1px solid var(--line); border-radius: 7px; background: var(--panel); }
+    .score-panel { min-height: 214px; padding: 22px 25px; display: grid; grid-template-columns: 170px 1fr; align-items: center; gap: 25px; }
+    .score-ring { width: 155px; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; position: relative; background: conic-gradient(var(--mint) var(--score-angle, 0deg), #34423a 0); }
+    .score-ring::before { content: ""; position: absolute; inset: 8px; background: var(--panel); border-radius: 50%; }
+    .score-value { position: relative; text-align: center; }
+    .score-value strong { display: block; font: 42px/1 var(--serif); }
+    .score-value span { display: block; margin-top: 7px; color: var(--muted); font-size: 10px; letter-spacing: .11em; }
+    .section-label { color: var(--muted); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; }
+    .score-copy h2 { margin: 6px 0; font-size: 18px; }
+    .score-copy p { color: var(--muted); margin: 0; max-width: 430px; font-size: 12px; }
+    .score-stats { display: flex; gap: 30px; margin-top: 19px; }
+    .score-stats strong { display: block; font-size: 17px; }
+    .score-stats span { color: var(--muted); font-size: 10px; }
+    .system-panel { padding: 20px 21px; }
+    .panel-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .panel-heading h2 { margin: 0; font-size: 14px; }
+    .tag { color: var(--cyan); border: 1px solid #4d8d81; padding: 3px 7px; border-radius: 3px; font-size: 10px; }
+    .system-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 17px; }
+    .spec { min-width: 0; border-top: 1px solid var(--line); padding-top: 9px; }
+    .spec span { display: block; color: var(--muted); font-size: 10px; }
+    .spec strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; font-size: 12px; font-weight: 600; }
+    .columns { display: grid; grid-template-columns: minmax(0, 1.57fr) minmax(280px, .83fr); gap: 16px; align-items: start; }
+    .tests { padding: 19px 21px; }
+    .tests .panel-heading { margin-bottom: 17px; }
+    .duration { background: var(--panel-raised); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 6px 9px; }
+    .test-row { display: grid; grid-template-columns: 36px minmax(100px, 1fr) auto; align-items: center; gap: 13px; padding: 13px 0; border-top: 1px solid var(--line); }
+    .test-icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 5px; background: #29372e; color: var(--mint); font-weight: 800; font-size: 12px; }
+    .test-row:nth-of-type(3) .test-icon { color: var(--cyan); background: #233734; }
+    .test-row:nth-of-type(4) .test-icon { color: var(--amber); background: #382f24; }
+    .test-info strong { font-size: 12px; }
+    .test-info p { color: var(--muted); font-size: 10px; margin: 2px 0 0; }
+    .test-result { color: var(--muted); font-size: 11px; min-width: 63px; text-align: right; }
+    .run-button { width: 67px; padding: 6px 0; border: 1px solid #61746a; background: transparent; border-radius: 4px; font-size: 11px; }
+    .run-button:hover { border-color: var(--mint); color: var(--mint); }
+    .run-button:disabled { opacity: .45; cursor: not-allowed; }
+    .test-controls { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); padding-top: 15px; margin-top: 3px; gap: 12px; }
+    .test-controls label { color: var(--muted); font-size: 11px; display: flex; align-items: center; gap: 8px; }
+    .primary-button { padding: 9px 13px; font-size: 11px; }
+    .stop-button { border: 1px solid var(--red); color: var(--red); background: transparent; border-radius: 4px; padding: 8px 11px; font-size: 11px; }
+    .progress-wrap { height: 4px; background: #34423a; border-radius: 2px; margin-top: 12px; overflow: hidden; display: none; }
+    .progress-bar { width: 0; height: 100%; background: var(--mint); transition: width .2s linear; }
+    .run-state { min-height: 17px; margin-top: 7px; color: var(--muted); font-size: 10px; }
+    .side-stack { display: grid; gap: 16px; }
+    .leaderboard { padding: 19px 20px; }
+    .leaderboard .panel-heading { margin-bottom: 12px; }
+    .local-note { font-size: 10px; color: var(--amber); }
+    .leader-head, .leader-row { display: grid; grid-template-columns: 27px 1fr 68px; align-items: center; gap: 6px; }
+    .leader-head { color: var(--muted); font-size: 9px; padding-bottom: 8px; }
+    .leader-row { border-top: 1px solid var(--line); padding: 10px 0; font-size: 11px; }
+    .leader-row em { color: var(--mint); font-style: normal; }
+    .leader-row strong { text-align: right; }
+    .rank-1 { color: var(--amber); }
+    .empty-rank { color: var(--muted); border-top: 1px solid var(--line); padding: 17px 0 4px; font-size: 11px; }
+    .notice { padding: 16px 18px; border-left: 2px solid var(--amber); background: #27251f; color: #d6cbb8; font-size: 10px; }
+    .notice strong { display: block; color: var(--amber); font-size: 11px; margin-bottom: 4px; }
+    .notice p { margin: 0; }
+    .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; padding: 9px 13px; background: #edf3ed; color: #152019; border-radius: 4px; font-size: 12px; transition: .2s; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    @media (max-width: 850px) {
+      .overview, .columns { grid-template-columns: 1fr; }
+      .system-panel { order: 2; }
+      .side-stack { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 30px, 460px); }
+      header { height: 61px; }
+      .header-right span:last-child { display: none; }
+      main { padding-top: 25px; }
+      .intro { align-items: start; flex-direction: column; gap: 14px; }
+      h1 { font-size: 29px; }
+      .score-panel { grid-template-columns: 105px 1fr; padding: 17px; gap: 15px; }
+      .score-ring { width: 103px; }
+      .score-value strong { font-size: 31px; }
+      .score-stats { gap: 18px; }
+      .side-stack { grid-template-columns: 1fr; }
+      .tests { padding: 17px 15px; }
+      .test-row { grid-template-columns: 32px minmax(90px, 1fr) auto; gap: 8px; }
+      .test-icon { width: 30px; height: 30px; }
+      .test-result { min-width: 49px; font-size: 10px; }
+      .test-controls { align-items: start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand"><div class="brand-mark">R</div><div>RigCheck<small>HARDWARE DIAGNOSTICS</small></div></div>
+      <div class="header-right"><span><i class="live-dot"></i>本机硬件检测已就绪</span><span>本地运行 · 不上传数据</span></div>
+    </header>
+    <main>
+      <section class="intro">
+        <div><div class="eyebrow">设备性能工作台 / 01</div><h1>让每一颗芯片都说话。</h1><p>读取本机硬件清单，运行可控基准测试，查看你的设备成绩。</p></div>
+        <button class="scan-button" id="scanButton" type="button">重新扫描设备</button>
+      </section>
+      <section class="overview">
+        <div class="panel score-panel">
+          <div class="score-ring" id="scoreRing"><div class="score-value"><strong id="overallScore">--</strong><span>RIG SCORE</span></div></div>
+          <div class="score-copy"><div class="section-label">综合性能指数</div><h2 id="scoreTitle">运行测试以生成成绩</h2><p id="scoreDescription">CPU 使用本机并行线程测试，图形与内存成绩反映当前应用环境，不等同于专业硬件认证跑分。</p><div class="score-stats"><div><strong id="cpuSummary">--</strong><span>CPU 分数</span></div><div><strong id="gpuSummary">--</strong><span>GPU 帧率</span></div><div><strong id="memorySummary">--</strong><span>内存速度</span></div></div></div>
+        </div>
+        <div class="panel system-panel">
+          <div class="panel-heading"><h2>设备概览</h2><span class="tag">本机读取</span></div>
+          <div class="system-list">
+            <div class="spec"><span>处理器</span><strong id="cpuInfo">检测中</strong></div>
+            <div class="spec"><span>物理核心 / 线程</span><strong id="cpuCoreInfo">检测中</strong></div>
+            <div class="spec"><span>内存</span><strong id="ramInfo">检测中</strong></div>
+            <div class="spec"><span>显卡</span><strong id="gpuInfo">检测中</strong></div>
+            <div class="spec"><span>显存 / 驱动</span><strong id="gpuMemoryInfo">检测中</strong></div>
+            <div class="spec"><span>主板</span><strong id="boardInfo">检测中</strong></div>
+            <div class="spec"><span>BIOS</span><strong id="biosInfo">检测中</strong></div>
+            <div class="spec"><span>磁盘</span><strong id="diskInfo">检测中</strong></div>
+            <div class="spec"><span>CPU 温度</span><strong id="temperatureInfo">检测中</strong></div>
+            <div class="spec"><span>操作系统</span><strong id="osInfo">检测中</strong></div>
+            <div class="spec"><span>屏幕分辨率</span><strong id="screenInfo">检测中</strong></div>
+          </div>
+        </div>
+      </section>
+      <section class="columns">
+        <div class="panel tests">
+          <div class="panel-heading"><h2>基准与压力测试</h2><select class="duration" id="duration" aria-label="测试时长"><option value="10">10 秒 · 推荐</option><option value="20">20 秒</option><option value="30">30 秒 · 上限</option></select></div>
+          <div class="test-row"><div class="test-icon">CPU</div><div class="test-info"><strong>处理器多线程</strong><p>本机并行计算 · 最多启用 16 个线程</p></div><span class="test-result" id="cpuResult">未测试</span><button class="run-button" data-test="cpu" type="button">运行</button></div>
+          <div class="test-row"><div class="test-icon">GPU</div><div class="test-info"><strong>图形渲染负载</strong><p>WebGL 着色器运算 · 测量帧率</p></div><span class="test-result" id="gpuResult">未测试</span><button class="run-button" data-test="gpu" type="button">运行</button></div>
+          <div class="test-row"><div class="test-icon">RAM</div><div class="test-info"><strong>内存带宽抽测</strong><p>限量缓冲区读写 · 不测试容量</p></div><span class="test-result" id="memoryResult">未测试</span><button class="run-button" data-test="memory" type="button">运行</button></div>
+          <div class="test-controls"><label><input id="confirmStress" type="checkbox"> 我已保存工作，并确认设备散热正常</label><button class="primary-button" id="allTestsButton" type="button">运行完整测试</button><button class="stop-button" id="stopButton" type="button" hidden>停止测试</button></div>
+          <div class="progress-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div><div class="run-state" id="runState" aria-live="polite">单项最长 30 秒；CPU 温度传感器可用时，超过 90°C 自动停止。</div>
+        </div>
+        <aside class="side-stack">
+          <div class="panel leaderboard"><div class="panel-heading"><h2>本机排行榜</h2><span class="local-note">仅此浏览器保存</span></div><div class="leader-head"><span>名次</span><span>成绩记录</span><span style="text-align:right">总分</span></div><div id="leaderRows"></div></div>
+          <div class="notice"><strong>测试边界与安全提示</strong><p>CPU、内存、主板、显卡及磁盘信息通过本机接口读取，传感器是否可用取决于系统和驱动。网页图形 API 无法保证 GPU 达到 100% 负载，也不会执行磁盘写入压力测试。单项最长 30 秒；温度传感器可用时，CPU 超过 90°C 自动停止。跨用户排行榜需要服务端。</p></div>
+        </aside>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    let cpuThreads = Math.max(1, navigator.hardwareConcurrency || 2);
+    const runtime = { workers: [], animation: 0, timer: 0, stop: null, running: false, all: false };
+    const results = { cpu: null, gpu: null, memory: null };
+
+    async function detectDevice() {
+      if (window.rigcheck?.scanHardware) {
+        $("#runState").textContent = "正在读取本机硬件信息…";
+        try {
+          const hardware = await window.rigcheck.scanHardware();
+          cpuThreads = Math.max(1, hardware.cpu.threads || cpuThreads);
+          $("#cpuInfo").textContent = hardware.cpu.brand || "系统未提供";
+          $("#cpuCoreInfo").textContent = `${hardware.cpu.cores || "?"} 核 / ${hardware.cpu.threads || cpuThreads} 线程`;
+          $("#ramInfo").textContent = hardware.memory.total ? `${(hardware.memory.total / 1024 ** 3).toFixed(1)} GB` : "系统未提供";
+          const graphics = hardware.graphics.filter((item) => item.model || item.vendor);
+          $("#gpuInfo").textContent = graphics.map((item) => `${item.vendor} ${item.model}`.trim()).join(" / ") || "系统未提供";
+          const vram = graphics.reduce((total, item) => total + (item.vram || 0), 0);
+          const drivers = [...new Set(graphics.map((item) => item.driver).filter(Boolean))];
+          $("#gpuMemoryInfo").textContent = [vram ? `${vram} MB` : "显存未知", drivers.length ? `驱动 ${drivers.join(", ")}` : "驱动未知"].join(" · ");
+          $("#boardInfo").textContent = [hardware.board.manufacturer, hardware.board.model, hardware.board.version].filter(Boolean).join(" ") || "系统未提供";
+          $("#biosInfo").textContent = [hardware.bios.vendor, hardware.bios.version, hardware.bios.releaseDate].filter(Boolean).join(" · ") || "系统未提供";
+          $("#diskInfo").textContent = hardware.disks.map((disk) => `${disk.vendor} ${disk.name} · ${disk.size ? `${(disk.size / 1024 ** 3).toFixed(0)} GB` : "容量未知"}${disk.health ? ` · ${disk.health}` : ""}`).join(" / ") || "系统未提供";
+          $("#temperatureInfo").textContent = hardware.temperature.main > 0 ? `${hardware.temperature.main}°C` : "传感器不可用";
+          $("#osInfo").textContent = [hardware.operatingSystem.distro, hardware.operatingSystem.release, hardware.operatingSystem.arch].filter(Boolean).join(" · ") || "系统未提供";
+          $("#screenInfo").textContent = `${screen.width} × ${screen.height}`;
+          $("#runState").textContent = "本机硬件信息读取完成。";
+        } catch {
+          $("#runState").textContent = "本机硬件扫描失败，请重试。";
+        }
+        return;
+      }
+      $("#cpuInfo").textContent = "浏览器隐藏具体型号";
+      $("#cpuCoreInfo").textContent = `${cpuThreads} 个逻辑线程`;
+      $("#ramInfo").textContent = navigator.deviceMemory ? `约 ${navigator.deviceMemory} GB（粗略值）` : "浏览器未提供";
+      $("#gpuMemoryInfo").textContent = "桌面应用模式可读取";
+      $("#boardInfo").textContent = "桌面应用模式可读取";
+      $("#biosInfo").textContent = "桌面应用模式可读取";
+      $("#diskInfo").textContent = "桌面应用模式可读取";
+      $("#temperatureInfo").textContent = "浏览器不可读取";
+      $("#osInfo").textContent = navigator.platform || "浏览器未提供";
+      $("#screenInfo").textContent = `${screen.width} × ${screen.height}`;
+      let renderer = "WebGL 不可用";
+      const canvas = document.createElement("canvas");
+      const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      if (gl) {
+        const extension = gl.getExtension("WEBGL_debug_renderer_info");
+        renderer = extension ? gl.getParameter(extension.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+        gl.getExtension("WEBGL_lose_context")?.loseContext();
+      }
+      $("#gpuInfo").textContent = renderer;
+    }
+
+    function setBusy(busy) {
+      runtime.running = busy;
+      document.querySelectorAll(".run-button").forEach((button) => { button.disabled = busy; });
+      $("#allTestsButton").disabled = busy;
+      $("#stopButton").hidden = !busy;
+      $("#duration").disabled = busy;
+    }
+
+    function stopCurrentTest(message = "测试已停止。") {
+      if (runtime.stop) {
+        const pendingStop = runtime.stop(false);
+        if (pendingStop && typeof pendingStop.then === "function") {
+          $("#runState").textContent = "正在停止本机 CPU 压力线程…";
+          return;
+        }
+      }
+      runtime.workers.forEach((worker) => worker.terminate());
+      runtime.workers = [];
+      cancelAnimationFrame(runtime.animation);
+      clearInterval(runtime.timer);
+      runtime.stop = null;
+      setBusy(false);
+      $("#progressWrap").style.display = "none";
+      $("#runState").textContent = message;
+    }
+
+    function beginProgress(testName, duration, onFinish) {
+      const startedAt = performance.now();
+      $("#progressWrap").style.display = "block";
+      $("#progressBar").style.width = "0%";
+      $("#runState").textContent = `${testName}运行中… 可以随时停止。`;
+      runtime.timer = setInterval(() => {
+        const progress = Math.min(1, (performance.now() - startedAt) / duration);
+        $("#progressBar").style.width = `${progress * 100}%`;
+        if (progress >= 1) onFinish();
+      }, 100);
+      return () => Math.max(0, performance.now() - startedAt);
+    }
+
+    async function runCpu(duration) {
+      if (window.rigcheck?.startCpuStress) {
+        const startedAt = performance.now();
+        let stopRequested = false;
+        $("#progressWrap").style.display = "block";
+        $("#progressBar").style.width = "0%";
+        $("#runState").textContent = "本机 CPU 压力测试运行中… 可以随时停止。";
+        runtime.timer = setInterval(() => {
+          const progress = Math.min(1, (performance.now() - startedAt) / duration);
+          $("#progressBar").style.width = `${progress * 100}%`;
+        }, 100);
+        runtime.stop = () => {
+          stopRequested = true;
+          return window.rigcheck.stopCpuStress();
+        };
+        try {
+          const result = await window.rigcheck.startCpuStress(duration);
+          clearInterval(runtime.timer);
+          runtime.stop = null;
+          if (result.reason === "thermal-limit") {
+            $("#runState").textContent = "CPU 温度达到 90°C，已自动停止。";
+            return false;
+          }
+          if (result.stopped) {
+            $("#runState").textContent = result.reason === "worker-error" ? "CPU 压测线程异常退出。" : "测试已停止。";
+            setBusy(false);
+            $("#progressWrap").style.display = "none";
+            return false;
+          }
+          results.cpu = Math.round(result.operations / Math.max(1, result.elapsedMs) * 10);
+          $("#cpuResult").textContent = `${results.cpu.toLocaleString()} 分 · ${result.threads} 线程`;
+          if (!stopRequested) $("#runState").textContent = "CPU 测试完成。";
+          return true;
+        } catch {
+          clearInterval(runtime.timer);
+          runtime.stop = null;
+          $("#runState").textContent = "CPU 测试启动失败。";
+          return false;
+        }
+      }
+      if (!window.Worker || !window.Blob || !window.URL.createObjectURL) {
+        $("#cpuResult").textContent = "此浏览器不支持";
+        return Promise.resolve(false);
+      }
+      return new Promise((resolve) => {
+        let completed = false;
+        let operations = 0;
+        const workerCode = `let value = 0.25; let count = 0; const stopAt = Date.now() + ${duration}; while (Date.now() < stopAt) { for (let i = 0; i < 4000; i++) { value = Math.sqrt(value + i * 0.000001); count++; } } postMessage(count);`;
+        const workerUrl = URL.createObjectURL(new Blob([workerCode], { type: "text/javascript" }));
+        const count = Math.min(cpuThreads, 16);
+        runtime.workers = Array.from({ length: count }, () => {
+          const worker = new Worker(workerUrl);
+          worker.onmessage = (event) => {
+            operations += event.data;
+            if (--remaining === 0) finish();
+          };
+          worker.onerror = () => { if (--remaining === 0) finish(); };
+          return worker;
+        });
+        let remaining = count;
+        const getElapsed = beginProgress("CPU 多线程压力测试", duration, () => finish());
+        function finish(wasStopped = false) {
+          if (completed) return;
+          completed = true;
+          clearInterval(runtime.timer);
+          runtime.workers.forEach((worker) => worker.terminate());
+          runtime.workers = [];
+          URL.revokeObjectURL(workerUrl);
+          runtime.stop = null;
+          if (!wasStopped) {
+            const elapsed = Math.max(1, Math.min(duration, getElapsed()));
+            results.cpu = Math.round(operations / elapsed * 10);
+            $("#cpuResult").textContent = `${results.cpu.toLocaleString()} 分`;
+          }
+          resolve(!wasStopped);
+        }
+        runtime.stop = () => finish(true);
+      });
+    }
+
+    function runGpu(duration) {
+      const canvas = document.createElement("canvas");
+      const gl = canvas.getContext("webgl", { alpha: false, antialias: false, powerPreference: "high-performance" });
+      if (!gl) {
+        $("#gpuResult").textContent = "WebGL 不可用";
+        return Promise.resolve(false);
+      }
+      const vertexSource = "attribute vec2 p; void main(){gl_Position=vec4(p,0.0,1.0);}";
+      const fragmentSource = "precision mediump float; uniform float t; uniform vec2 r; void main(){vec2 uv=gl_FragCoord.xy/r; float v=0.0; for(int i=0;i<40;i++){uv=abs(uv)/dot(uv,uv)-0.71; v+=sin(uv.x+float(i)*0.12+t)*cos(uv.y-float(i)*0.09);} gl_FragColor=vec4(abs(sin(v)),abs(cos(v*0.7)),abs(sin(v*0.4)),1.0);}";
+      function compile(type, source) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(shader));
+        return shader;
+      }
+      let program;
+      try {
+        program = gl.createProgram();
+        gl.attachShader(program, compile(gl.VERTEX_SHADER, vertexSource));
+        gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragmentSource));
+        gl.linkProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error("WebGL program link failed");
+      } catch {
+        $("#gpuResult").textContent = "着色器不可用";
+        gl.getExtension("WEBGL_lose_context")?.loseContext();
+        return Promise.resolve(false);
+      }
+      const width = Math.min(1280, Math.max(320, innerWidth * .8 | 0));
+      const height = Math.min(720, Math.max(240, innerHeight * .55 | 0));
+      canvas.width = width;
+      canvas.height = height;
+      gl.viewport(0, 0, width, height);
+      gl.useProgram(program);
+      const buffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const position = gl.getAttribLocation(program, "p");
+      gl.enableVertexAttribArray(position);
+      gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+      const startedAt = performance.now();
+      let frames = 0;
+      let done = false;
+      const release = () => { gl.getExtension("WEBGL_lose_context")?.loseContext(); };
+      const finish = (wasStopped = false) => {
+        if (done) return;
+        done = true;
+        cancelAnimationFrame(runtime.animation);
+        clearInterval(runtime.timer);
+        const elapsed = Math.max(1, performance.now() - startedAt);
+        results.gpu = Math.round(frames / elapsed * 1000);
+        $("#gpuResult").textContent = `${results.gpu} FPS`;
+        release();
+        runtime.stop = null;
+        if (wasStopped) { setBusy(false); $("#progressWrap").style.display = "none"; $("#runState").textContent = "测试已停止。"; }
+        resolvePromise(!wasStopped);
+      };
+      let resolvePromise;
+      const promise = new Promise((resolve) => { resolvePromise = resolve; });
+      const elapsed = beginProgress("GPU 图形渲染压力测试", duration, () => finish());
+      const draw = () => {
+        if (done) return;
+        gl.uniform1f(gl.getUniformLocation(program, "t"), elapsed() / 1000);
+        gl.uniform2f(gl.getUniformLocation(program, "r"), width, height);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        frames++;
+        runtime.animation = requestAnimationFrame(draw);
+      };
+      runtime.stop = () => finish(true);
+      draw();
+      return promise;
+    }
+
+    function runMemory() {
+      const deviceLimit = navigator.deviceMemory ? Math.max(8, Math.min(32, navigator.deviceMemory * 8)) : 16;
+      const bytes = Math.min(32, deviceLimit) * 1024 * 1024;
+      let buffer;
+      const startedAt = performance.now();
+      try {
+        buffer = new Uint8Array(bytes);
+        for (let index = 0; index < buffer.length; index += 64) buffer[index] = index & 255;
+        let checksum = 0;
+        for (let index = 0; index < buffer.length; index += 64) checksum += buffer[index];
+        const elapsed = Math.max(1, performance.now() - startedAt);
+        results.memory = Math.round(bytes / elapsed * 1000 / (1024 * 1024));
+        $("#memoryResult").textContent = `${results.memory} MB/s`;
+        return Promise.resolve(Boolean(checksum >= 0));
+      } catch {
+        $("#memoryResult").textContent = "分配受限";
+        return Promise.resolve(false);
+      } finally {
+        buffer = null;
+      }
+    }
+
+    function updateScore() {
+      const available = [results.cpu !== null, results.gpu !== null, results.memory !== null].filter(Boolean).length;
+      if (!available) return;
+      const normalized = [results.cpu ? Math.min(100, Math.log10(results.cpu + 1) * 18) : null, results.gpu ? Math.min(100, results.gpu / 2) : null, results.memory ? Math.min(100, results.memory / 8) : null].filter((score) => score !== null);
+      const score = Math.round(normalized.reduce((sum, value) => sum + value, 0) / normalized.length);
+      $("#overallScore").textContent = score;
+      $("#scoreRing").style.setProperty("--score-angle", `${score * 3.6}deg`);
+      $("#scoreTitle").textContent = available === 3 ? "本机测试已完成" : "部分测试已完成";
+      $("#scoreDescription").textContent = `${available}/3 项浏览器基准测试完成；分数仅用于同一设备和浏览器环境内对比。`;
+      $("#cpuSummary").textContent = results.cpu?.toLocaleString() ?? "--";
+      $("#gpuSummary").textContent = results.gpu ? `${results.gpu} FPS` : "--";
+      $("#memorySummary").textContent = results.memory ? `${results.memory} MB/s` : "--";
+      saveLeaderboard(score);
+    }
+
+    function saveLeaderboard(score) {
+      const key = "rigcheck-scores-v1";
+      let scores = [];
+      try { scores = JSON.parse(localStorage.getItem(key) || "[]"); } catch { scores = []; }
+      if (scores.some((item) => item.score === score)) return renderLeaderboard();
+      scores.push({ score, date: new Date().toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" }) });
+      scores.sort((first, second) => second.score - first.score);
+      try { localStorage.setItem(key, JSON.stringify(scores.slice(0, 5))); } catch { /* Private browsing can disable storage. */ }
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      const target = $("#leaderRows");
+      let scores = [];
+      try { scores = JSON.parse(localStorage.getItem("rigcheck-scores-v1") || "[]"); } catch { scores = []; }
+      target.replaceChildren();
+      if (!scores.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-rank";
+        empty.textContent = "完成一次测试，点亮你的第一条记录。";
+        target.append(empty);
+        return;
+      }
+      scores.forEach((entry, index) => {
+        const row = document.createElement("div");
+        row.className = "leader-row";
+        const rank = document.createElement("em");
+        rank.className = index === 0 ? "rank-1" : "";
+        rank.textContent = String(index + 1).padStart(2, "0");
+        const date = document.createElement("span");
+        date.textContent = `本机记录 · ${entry.date}`;
+        const score = document.createElement("strong");
+        score.textContent = entry.score;
+        row.append(rank, date, score);
+        target.append(row);
+      });
+    }
+
+    async function runOne(type) {
+      if (runtime.running) return false;
+      if (!$("#confirmStress").checked) {
+        $("#runState").textContent = "请先确认已保存工作，并确认设备散热正常。";
+        return false;
+      }
+      setBusy(true);
+      const duration = Number($("#duration").value) * 1000;
+      if (type === "cpu") return runCpu(duration);
+      if (type === "gpu") return runGpu(duration);
+      const passed = await runMemory();
+      setBusy(false);
+      $("#runState").textContent = passed ? "内存带宽抽测完成；未尝试占满系统内存。" : "内存抽测未能完成。";
+      updateScore();
+      return passed;
+    }
+
+    $("#stopButton").addEventListener("click", () => stopCurrentTest());
+    $("#scanButton").addEventListener("click", () => { detectDevice(); $("#runState").textContent = "设备信息已重新扫描。"; });
+    document.querySelectorAll(".run-button").forEach((button) => button.addEventListener("click", async () => {
+      const passed = await runOne(button.dataset.test);
+      if (runtime.running) { setBusy(false); $("#progressWrap").style.display = "none"; }
+      if (passed) { $("#runState").textContent = "测试完成。"; updateScore(); }
+    }));
+    $("#allTestsButton").addEventListener("click", async () => {
+      if (runtime.running) return;
+      runtime.all = true;
+      for (const type of ["cpu", "gpu", "memory"]) {
+        const passed = await runOne(type);
+        if (!passed) break;
+        if (type !== "memory") { setBusy(false); $("#progressWrap").style.display = "none"; updateScore(); }
+      }
+      runtime.all = false;
+      setBusy(false);
+      $("#progressWrap").style.display = "none";
+      updateScore();
+      $("#runState").textContent = "完整测试流程结束。";
+    });
+    detectDevice();
+    renderLeaderboard();
+  </script>
+</body>
+</html>
