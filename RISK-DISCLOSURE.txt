@@ -1,0 +1,11 @@
+RigCheck Hardware Tuning Risk Disclosure
+
+RigCheck is a hardware diagnostics application. It does not itself write CPU or GPU clock, voltage, fan, firmware, or thermal settings.
+
+Optional tuning links open separate third-party tools. Their availability and supported hardware vary by operating system, processor, graphics card, firmware, and driver. Read and accept the third-party tool's own terms before installing or applying any tuning settings.
+
+Changing power, clock, voltage, current, or thermal settings can cause instability, crashes, data loss, overheating, reduced battery life, hardware damage, or loss of warranty coverage. Unsaved work may be lost. Back up important data and use only settings documented for the exact device model. Never disable hardware thermal protections.
+
+No performance gain is guaranteed. In particular, RigCheck makes no promise of a 3x performance increase. Apple Silicon and many laptops do not provide general-purpose overclock controls.
+
+By continuing, you confirm that you understand these risks and choose whether to use third-party tuning software. RigCheck does not control or apply settings in third-party tools.

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const os = require("node:os");
 const path = require("node:path");
 const { Worker } = require("node:worker_threads");
@@ -6,6 +6,10 @@ const si = require("systeminformation");
 
 let mainWindow;
 let activeCpuRun;
+const tuningToolUrls = {
+  uxtu: "https://github.com/JamesCJ60/Universal-x86-Tuning-Utility/releases/latest",
+  zentune: "https://github.com/HorizonUnix/ZenTune/releases/latest"
+};
 
 function assertTrustedWindow(event) {
   const window = BrowserWindow.fromWebContents(event.sender);
@@ -113,6 +117,7 @@ async function scanHardware(event) {
       max: Number(temperature.max) || 0
     },
     operatingSystem: {
+      platform: process.platform,
       distro: operatingSystem.distro || operatingSystem.platform || "",
       release: operatingSystem.release || "",
       arch: operatingSystem.arch || process.arch
@@ -203,6 +208,19 @@ function stopCpuRun(event) {
   return finishCpuRun(true, "user-stopped");
 }
 
+async function openTuningTool(event, toolId) {
+  assertTrustedWindow(event);
+  const url = tuningToolUrls[toolId];
+  if (!url) throw new Error("Unsupported tuning tool");
+  await shell.openExternal(url);
+  return true;
+}
+
+function closeApp(event) {
+  assertTrustedWindow(event);
+  mainWindow?.close();
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1180,
@@ -235,6 +253,8 @@ ipcMain.handle("app:version", (event) => {
   assertTrustedWindow(event);
   return app.getVersion();
 });
+ipcMain.handle("tuning:open", openTuningTool);
+ipcMain.on("app:close", closeApp);
 ipcMain.handle("stress:cpu:start", startCpuRun);
 ipcMain.handle("stress:cpu:stop", stopCpuRun);
 

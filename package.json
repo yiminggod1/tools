@@ -1,6 +1,6 @@
 {
   "name": "rigcheck-desktop",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "description": "Cross-platform desktop hardware diagnostics and benchmarks",
   "main": "main.js",
@@ -41,6 +41,12 @@
       "target": [
         "dmg"
       ]
+    },
+    "dmg": {
+      "license": "RISK-DISCLOSURE.txt"
+    },
+    "nsis": {
+      "license": "RISK-DISCLOSURE.txt"
     }
   }
 }

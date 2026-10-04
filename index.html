@@ -221,6 +221,24 @@
     .score-breakdown-row { display: grid; grid-template-columns: 1fr 52px; gap: 12px; font-size: 11px; }
     .score-breakdown-row span { color: var(--muted); }
     .score-breakdown-row strong { text-align: right; }
+    .risk-dialog { width: min(590px, calc(100% - 30px)); }
+    .risk-dialog h2 { font-size: 29px; }
+    .risk-dialog .risk-lead { color: var(--text); font-size: 13px; }
+    .risk-dialog ul { padding-left: 19px; }
+    .risk-accept { display: flex; align-items: start; gap: 10px; margin-top: 18px; padding: 13px; border: 1px solid var(--line); border-radius: 4px; color: var(--text); }
+    .risk-accept input { flex: 0 0 auto; margin-top: 3px; accent-color: var(--mint); }
+    .risk-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 17px; }
+    .risk-actions button { min-height: 39px; padding: 8px 12px; border-radius: 4px; }
+    .risk-continue { border: 0; background: var(--mint); color: #142015; font-weight: 700; }
+    .risk-continue:disabled { opacity: .42; cursor: not-allowed; }
+    .risk-exit { border: 1px solid var(--line); background: transparent; color: var(--muted); }
+    .tuning-panel { padding: 17px 18px; }
+    .tuning-panel .panel-heading h2 { font-size: 14px; }
+    .tuning-status { color: var(--muted); font-size: 11px; line-height: 1.7; }
+    .tuning-button { margin-top: 10px; width: 100%; border: 1px solid #61746a; border-radius: 4px; padding: 9px; background: #222d29; color: var(--text); font-size: 11px; }
+    .tuning-button:hover:not(:disabled) { border-color: var(--mint); color: var(--mint); }
+    .tuning-button:disabled { opacity: .4; cursor: not-allowed; }
+    .tuning-footnote { margin: 8px 0 0; color: var(--muted); font-size: 9px; line-height: 1.6; }
     @media (max-width: 900px) {
       .shell { width: min(100% - 36px, 720px); }
       .intro { grid-template-columns: 1fr; gap: 14px; }
@@ -310,6 +328,7 @@
           <div class="progress-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div><div class="run-state" id="runState" aria-live="polite">单项最长 30 秒；CPU 温度传感器可用时，超过 90°C 自动停止。</div>
         </div>
         <aside class="side-stack">
+          <div class="panel tuning-panel"><div class="panel-heading"><h2>外部硬件调校器</h2><span class="tag">型号匹配</span></div><p class="tuning-status" id="tuningToolStatus">先扫描设备，再检查处理器架构和操作系统支持。</p><button class="tuning-button" id="openTuningTool" type="button" disabled>检查设备支持中</button><p class="tuning-footnote">RigCheck 不内嵌第三方驱动或直接写入硬件设置。外部工具需单独安装，并可能请求管理员/root 权限。</p></div>
           <div class="benchmark-note"><strong>分数不是玄学。</strong>CPU 40%、GPU 40%、内存 20%。GPU 有计时扩展时按实际 GPU 执行耗时计分；没有扩展只显示受刷新率限制的 FPS，不计 GPU 分。5K 为原生 5120×2880。<button class="score-help" id="scoreHelpSide" type="button">查看评分公式</button></div>
           <div class="notice performance-notice"><strong>想让它更快？先找瓶颈</strong><p>不会改频率、电压或温控。按你的系统、温度和测试结果给出可逆的性能建议；任何机器都无法保证超频 3 倍。</p><button class="performance-button" id="performanceGuide" type="button">查看安全性能建议</button></div>
           <div class="notice"><strong>对这台机器的尊重</strong><p>CPU 压测最多 30 秒，传感器可用时达到 90°C 自动停止。显卡、风扇和电源读数受驱动与系统限制；磁盘只读取型号和健康信息，不写入压力数据。温度或风扇异常时请立即停止。</p></div>
@@ -319,6 +338,7 @@
     </main>
   </div>
   <dialog class="score-dialog" id="scoreDialog"><h2>这份分数代表什么？</h2><p>RIG 是本应用内的 0–100 性能画像，不是行业标准，也不冒充硬件认证。完整跑完三项后，按以下权重加权；未测项目不计入，并标出完成率。</p><div class="score-breakdown"><div class="score-breakdown-row"><span>CPU · 80,000,000 次基准运算 / 秒 = 100 分</span><strong>40%</strong></div><div class="score-breakdown-row"><span>GPU · 1280×720、12 次迭代、GPU 执行 16.67 ms = 100 分</span><strong>40%</strong></div><div class="score-breakdown-row"><span>内存 · 25,000 MB/s 实际读写 = 100 分</span><strong>20%</strong></div></div><ul><li>单项分数到 100 封顶，低于基准按比例显示。</li><li>GPU timer query 不可用时保留呈现 FPS，但不把显示器刷新率冒充 GPU 速度，也不计 GPU 子分。</li><li>5K 测试会渲染 14,745,600 像素，单帧缓冲约 56 MiB；必须受设备尺寸上限约束。</li><li>不同系统、应用版本和散热环境会影响结果；适合用同一档位对比同一台设备。</li></ul><button class="dialog-close" id="closeScoreDialog" type="button">明白了</button></dialog>
+  <dialog class="score-dialog risk-dialog" id="launchRiskDialog"><div class="eyebrow">FIRST RUN · OPTIONAL TUNING</div><h2>先看清风险，再选择是否继续。</h2><p class="risk-lead">RigCheck 的测试不会超频。你可以选择打开单独的第三方硬件调校器；是否安装、应用哪项设置，完全由你自行决定。</p><ul><li>调高功耗、频率、电压或电流可能造成死机、数据丢失、过热、硬件损坏或影响保修。请先备份数据并使用原装电源。</li><li>UXTU/ZenTune 需要特定 x86/AMD Ryzen 硬件和系统；它们不支持所有电脑。Apple Silicon 没有通用软件超频入口。</li><li>工具、驱动和设置由第三方提供。RigCheck 不会代你改频率、电压、风扇、固件或温控，也无法保证任何性能提升。</li><li>免责提示不替代当地法律规定的法定权利或产品保修条款。</li></ul><label class="risk-accept"><input id="acceptRisk" type="checkbox"><span>我已阅读并理解这些风险；如果我选择安装或使用外部调校工具，我会自行判断设备兼容性并承担相应后果。</span></label><div class="risk-actions"><button class="risk-exit" id="exitApp" type="button">退出应用</button><button class="risk-continue" id="continueApp" type="button" disabled>我已知情，继续</button></div></dialog>
   <dialog class="score-dialog" id="performanceDialog"><h2>给这台机器的安全建议</h2><p id="performanceSummary">这些建议只调用操作系统和硬件厂商公开设置，不写时钟、电压、风扇曲线或固件。</p><ul id="performanceTips"></ul><button class="dialog-close" id="closePerformanceDialog" type="button">知道了</button></dialog>
   <div class="toast" id="toast" role="status"></div>
   <script>
@@ -341,6 +361,7 @@
         try {
           const hardware = await window.rigcheck.scanHardware();
           hardwareSnapshot = hardware;
+          configureTuningTool(hardware);
           cpuThreads = Math.max(1, hardware.cpu.threads || cpuThreads);
           $("#cpuInfo").textContent = [hardware.cpu.manufacturer, hardware.cpu.brand].filter(Boolean).join(" ") || "处理器型号未提供";
           $("#cpuCoreInfo").textContent = `${hardware.cpu.cores || "?"} 核 / ${hardware.cpu.threads || cpuThreads} 线程 · 最高 ${hardware.cpu.speedMax || hardware.cpu.speed || "?"} GHz`;
@@ -363,6 +384,7 @@
           $("#sceneStatus").textContent = `${graphics[0]?.model || "GPU 型号待确认"} · 待机`;
           $("#runState").textContent = "本机硬件信息读取完成。";
         } catch {
+          configureTuningTool(null);
           $("#runState").textContent = "本机硬件扫描失败，请重试。";
         }
         return;
@@ -383,6 +405,7 @@
       $("#temperatureInfo").textContent = "浏览器不可读取";
       $("#osInfo").textContent = navigator.platform || "浏览器未提供";
       $("#hardwareCount").textContent = "有限浏览器权限";
+      configureTuningTool(null);
       let renderer = "WebGL 不可用";
       const canvas = document.createElement("canvas");
       const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
@@ -392,6 +415,41 @@
         gl.getExtension("WEBGL_lose_context")?.loseContext();
       }
       $("#gpuInfo").textContent = renderer;
+    }
+
+    function configureTuningTool(hardware) {
+      const button = $("#openTuningTool");
+      const status = $("#tuningToolStatus");
+      const platform = hardware?.operatingSystem?.platform;
+      const architecture = hardware?.operatingSystem?.arch;
+      const processor = hardware?.cpu?.brand || "";
+      let toolId = "";
+      if (platform === "win32" && architecture === "x64") {
+        toolId = "uxtu";
+        status.textContent = `检测到 Windows x64 · ${processor || "处理器型号未提供"}。UXTU 自行检测处理器代际、驱动与 PawnIO 支持；不保证每台设备可调。`;
+        button.textContent = "打开 UXTU 官方发布页";
+      } else if ((platform === "linux" || platform === "darwin") && architecture === "x64" && /AMD.*Ryzen|Ryzen/i.test(processor)) {
+        toolId = "zentune";
+        status.textContent = `${platform === "darwin" ? "macOS Hackintosh" : "Linux x64"} · ${processor}。ZenTune 面向 AMD Ryzen；Linux 需要按官方说明配置受限后台服务。`;
+        button.textContent = "打开 ZenTune 官方发布页";
+      } else if (platform === "darwin" && architecture === "arm64") {
+        status.textContent = "Apple Silicon 不支持通用软件超频；UXTU 不支持 macOS，ZenTune 也不支持 Apple Silicon。";
+        button.textContent = "此设备不支持通用超频";
+      } else if (platform === "darwin") {
+        status.textContent = "当前为 Intel Mac。UXTU 是 Windows 工具，ZenTune 仅支持 AMD Ryzen Hackintosh，不支持 Intel Mac。";
+        button.textContent = "暂无兼容的调校工具";
+      } else if (platform === "linux" && !/AMD.*Ryzen|Ryzen/i.test(processor)) {
+        status.textContent = `检测到 Linux · ${processor || "CPU 型号未提供"}。ZenTune 目前仅支持 AMD Ryzen；不提供未经验证的 Intel 写入方案。`;
+        button.textContent = "此处理器暂无匹配工具";
+      } else if (!platform) {
+        status.textContent = "浏览器预览没有原生硬件权限；请安装桌面应用后再检查兼容性。";
+        button.textContent = "桌面应用模式可检测";
+      } else {
+        status.textContent = `${platform} / ${architecture} 暂无已验证的 RigCheck 外部调校入口。`;
+        button.textContent = "暂无兼容的调校工具";
+      }
+      button.dataset.tool = toolId;
+      button.disabled = !toolId || !window.rigcheck?.openTuningTool;
     }
 
     function setBusy(busy) {
@@ -975,12 +1033,35 @@
     }
 
     const scoreDialog = $("#scoreDialog");
+    const launchRiskDialog = $("#launchRiskDialog");
+    const riskStorageKey = "rigcheck-tuning-risk-accepted-v1";
+    let riskAccepted = false;
+    try { riskAccepted = localStorage.getItem(riskStorageKey) === "accepted"; } catch { riskAccepted = false; }
+    launchRiskDialog.addEventListener("cancel", (event) => event.preventDefault());
+    $("#acceptRisk").addEventListener("change", () => { $("#continueApp").disabled = !$("#acceptRisk").checked; });
+    $("#continueApp").addEventListener("click", () => {
+      if (!$("#acceptRisk").checked) return;
+      try { localStorage.setItem(riskStorageKey, "accepted"); } catch { /* Keep this session usable if storage is unavailable. */ }
+      launchRiskDialog.close();
+    });
+    $("#exitApp").addEventListener("click", () => window.rigcheck?.closeApp());
+    if (!riskAccepted) launchRiskDialog.showModal();
     $("#scoreHelp").addEventListener("click", () => scoreDialog.showModal());
     $("#scoreHelpSide").addEventListener("click", () => scoreDialog.showModal());
     $("#closeScoreDialog").addEventListener("click", () => scoreDialog.close());
     $("#performanceGuide").addEventListener("click", showPerformanceGuide);
     $("#closePerformanceDialog").addEventListener("click", () => $("#performanceDialog").close());
     $("#exportReport").addEventListener("click", exportReport);
+    $("#openTuningTool").addEventListener("click", async (event) => {
+      const button = event.currentTarget;
+      if (button.disabled || !button.dataset.tool) return;
+      try {
+        await window.rigcheck.openTuningTool(button.dataset.tool);
+        $("#runState").textContent = "已打开官方外部工具发布页。需单独安装并阅读其说明；RigCheck 不会自动应用调校。";
+      } catch {
+        $("#runState").textContent = "无法打开官方调校工具页面，请检查网络连接。";
+      }
+    });
     $("#gpuProfile").addEventListener("change", () => {
       const profile = gpuProfiles[$("#gpuProfile").value];
       $("#sceneStatus").textContent = `${hardwareSnapshot?.graphics?.[0]?.model || "Mandelbulb"} · ${profile.label}`;
